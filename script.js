@@ -1,411 +1,268 @@
-// --- BACKGROUND & PETALS & CLOUDS ENGINE ---
-const bgCanvas = document.getElementById('bgCanvas');
-const bgCtx = bgCanvas.getContext('2d');
+/* script.js */
+document.addEventListener('DOMContentLoaded', () => {
+    // Environment Effects: Sakura Petals Generator
+    const envEffects = document.getElementById('envEffects');
+    function createPetal() {
+        const petal = document.createElement('div');
+        petal.classList.add('petal');
+        const size = Math.random() * 8 + 8;
+        petal.style.width = `${size}px`;
+        petal.style.height = `${size * 1.4}px`;
+        petal.style.left = `${Math.random() * 100}vw`;
+        petal.style.animationDuration = `${Math.random() * 6 + 6}s`;
+        petal.style.animationDelay = `${Math.random() * 5}s`;
+        envEffects.appendChild(petal);
+        setTimeout(() => petal.remove(), 12000);
+    }
+    for (let i = 0; i < 15; i++) createPetal();
+    setInterval(createPetal, 800);
 
-let width, height;
-function resize() {
-    width = bgCanvas.width = window.innerWidth;
-    height = bgCanvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resize);
-resize();
+    // Scene Navigation Manager
+    function showScene(sceneId) {
+        document.querySelectorAll('.scene').forEach(scene => {
+            scene.classList.remove('active');
+        });
+        document.getElementById(sceneId).classList.add('active');
+    }
 
-const petals = [];
-for (let i = 0; i < 35; i++) {
-    petals.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        r: Math.random() * 6 + 4,
-        d: Math.random() * 35,
-        color: Math.random() > 0.5 ? '#ffb3c1' : '#ffccd5',
-        tilt: Math.random() * 10 - 10,
-        tiltAngleInc: Math.random() * 0.07 + 0.05,
-        tiltAngle: 0
-    });
-}
-
-const clouds = [];
-for (let i = 0; i < 5; i++) {
-    clouds.push({
-        x: Math.random() * width,
-        y: Math.random() * (height * 0.4),
-        speed: Math.random() * 0.2 + 0.1,
-        scale: Math.random() * 0.8 + 0.6
-    });
-}
-
-function drawCloud(ctx, x, y, scale) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(scale, scale);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-    ctx.beginPath();
-    ctx.arc(0, 0, 30, 0, Math.PI * 2);
-    ctx.arc(25, -15, 25, 0, Math.PI * 2);
-    ctx.arc(50, 0, 30, 0, Math.PI * 2);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
-}
-
-function updateBackground() {
-    bgCtx.clearRect(0, 0, width, height);
-
-    // Draw & Move Clouds
-    clouds.forEach(c => {
-        c.x += c.speed;
-        if (c.x > width + 100) c.x = -100;
-        drawCloud(bgCtx, c.x, c.y, c.scale);
-    });
-
-    // Draw & Move Petals
-    petals.forEach(p => {
-        p.tiltAngle += p.tiltAngleInc;
-        p.y += (Math.cos(p.d) + 1 + p.r / 2) * 0.5;
-        p.x += Math.sin(p.tiltAngle) * 1.5;
-
-        if (p.y > height + 20) {
-            p.y = -20;
-            p.x = Math.random() * width;
-        }
-
-        bgCtx.beginPath();
-        bgCtx.fillStyle = p.color;
-        bgCtx.ellipse(p.x, p.y, p.r, p.r * 0.6, p.tiltAngle, 0, Math.PI * 2);
-        bgCtx.fill();
-    });
-
-    requestAnimationFrame(updateBackground);
-}
-updateBackground();
-
-
-// --- PROCEDURAL GOLDEN RETRIEVER ANIMATION ENGINE ---
-const dogCanvas = document.getElementById('dogCanvas');
-const dogCtx = dogCanvas.getContext('2d');
-
-let dogState = 'walkIn'; // walkIn, idle, run, jump, sit, sleep
-let dogX = -100;
-let dogY = 120;
-let targetX = window.innerWidth / 2;
-let animTimer = 0;
-let pawPrints = [];
-
-function resizeDogStage() {
-    dogCanvas.width = window.innerWidth;
-    dogCanvas.height = 250;
-}
-window.addEventListener('resize', resizeDogStage);
-resizeDogStage();
-
-// Mouse/Cursor tracking for idle look
-let mouseX = window.innerWidth / 2;
-window.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-});
-
-function drawDog(x, y, state) {
-    dogCtx.save();
-    dogCtx.translate(x, y);
-
-    animTimer += 0.1;
-    let breath = Math.sin(animTimer) * 2;
-    let tailWag = Math.sin(animTimer * 8) * 15;
-    let headTilt = (state === 'idle') ? Math.sin(animTimer * 2) * 5 : 0;
-    let blink = (Math.floor(animTimer * 2) % 15 === 0) ? 0.1 : 1;
-
-    // Body
-    dogCtx.fillStyle = '#f4a261';
-    dogCtx.beginPath();
-    dogCtx.ellipse(0, 10 + breath, 50, 32, 0, 0, Math.PI * 2);
-    dogCtx.fill();
-
-    // Tail
-    dogCtx.save();
-    dogCtx.translate(-45, 0);
-    dogCtx.rotate((tailWag * Math.PI) / 180);
-    dogCtx.strokeStyle = '#e76f51';
-    dogCtx.lineWidth = 8;
-    dogCtx.lineCap = 'round';
-    dogCtx.beginPath();
-    dogCtx.moveTo(0, 0);
-    dogCtx.quadraticCurveTo(-25, -20, -35, -10);
-    dogCtx.stroke();
-    dogCtx.restore();
-
-    // Head
-    dogCtx.save();
-    dogCtx.translate(35, -15 + breath/2 + headTilt);
-
-    dogCtx.fillStyle = '#f4a261';
-    dogCtx.beginPath();
-    dogCtx.arc(0, 0, 26, 0, Math.PI * 2);
-    dogCtx.fill();
-
-    // Ears
-    dogCtx.fillStyle = '#e76f51';
-    dogCtx.beginPath();
-    dogCtx.ellipse(-12, 10, 10, 18, 0.3, 0, Math.PI * 2);
-    dogCtx.ellipse(12, 10, 10, 18, -0.3, 0, Math.PI * 2);
-    dogCtx.fill();
-
-    // Eyes
-    dogCtx.fillStyle = '#264653';
-    let eyeLookX = (mouseX > x + 35) ? 2 : -2;
-    dogCtx.beginPath();
-    dogCtx.ellipse(-7 + eyeLookX, -3, 3, 3 * blink, 0, 0, Math.PI * 2);
-    dogCtx.ellipse(7 + eyeLookX, -3, 3, 3 * blink, 0, 0, Math.PI * 2);
-    dogCtx.fill();
-
-    // Snout & Nose
-    dogCtx.fillStyle = '#ffffff';
-    dogCtx.beginPath();
-    dogCtx.ellipse(0, 6, 12, 9, 0, 0, Math.PI * 2);
-    dogCtx.fill();
-
-    dogCtx.fillStyle = '#264653';
-    dogCtx.beginPath();
-    dogCtx.arc(0, 3, 4, 0, Math.PI * 2);
-    dogCtx.fill();
-
-    dogCtx.restore();
-    dogCtx.restore();
-}
-
-function updateDog() {
-    dogCtx.clearRect(0, 0, dogCanvas.width, dogCanvas.height);
-
-    if (dogState === 'walkIn') {
-        dogX += 2;
-        if (dogX >= dogCanvas.width / 2) {
-            dogX = dogCanvas.width / 2;
-            dogState = 'idle';
-        }
-    } else if (dogState === 'run') {
-        dogX += 4;
-        if (dogX > dogCanvas.width + 50) {
-            dogX = -50;
+    // Helper: Floating Hearts Effect
+    function createHearts(x, y, count = 5) {
+        for (let i = 0; i < count; i++) {
+            const heart = document.createElement('div');
+            heart.classList.add('floating-heart');
+            heart.innerHTML = ['❤️', '💖', '✨', '💛'][Math.floor(Math.random() * 4)];
+            heart.style.left = `${x + (Math.random() * 60 - 30)}px`;
+            heart.style.top = `${y + (Math.random() * 40 - 20)}px`;
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 1500);
         }
     }
 
-    drawDog(dogX, dogY, dogState);
-    requestAnimationFrame(updateDog);
-}
-updateDog();
-
-
-// --- STORY & LEVEL MANAGEMENT ---
-const storyContent = document.getElementById('story-content');
-let currentLevel = 0;
-
-const levels = [
-    // Level 0: Opening Scene
-    () => {
-        storyContent.innerHTML = `
-            <div class="speech-bubble">
-                Hi 😊<br>My human asked me to show you something.<br>Would you come with me?
-            </div>
-            <button class="btn" id="petBtn">Pet Me 🐾</button>
-        `;
-        document.getElementById('petBtn').addEventListener('click', () => {
-            dogState = 'run';
-            setTimeout(() => {
-                dogState = 'idle';
-                dogX = dogCanvas.width / 2;
-                loadLevel(1);
-            }, 1000);
-        });
-    },
-
-    // Level 1: Fetch Game
-    () => {
-        let throws = 0;
-        storyContent.innerHTML = `
-            <h2>Level 1: Fetch! 🎾</h2>
-            <p>Drag the tennis ball to throw it for Buddy!</p>
-            <div class="game-area" id="gameArea">
-                <div class="draggable-ball" id="ball">🎾</div>
-            </div>
-            <p id="fetchCount">Successful throws: 0 / 3</p>
-        `;
-
-        const ball = document.getElementById('ball');
-        const area = document.getElementById('gameArea');
-        let isDragging = false;
-
-        ball.addEventListener('mousedown', () => isDragging = true);
-        window.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                throws++;
-                document.getElementById('fetchCount').innerText = `Successful throws: ${throws} / 3`;
-                ball.style.transform = 'translate(0, 0)';
-                if (throws >= 3) {
-                    setTimeout(() => loadLevel(2), 1000);
-                }
-            }
-        });
-        window.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                const rect = area.getBoundingClientRect();
-                let x = e.clientX - rect.left - 22;
-                let y = e.clientY - rect.top - 22;
-                ball.style.transform = `translate(${x}px, ${y}px)`;
-            }
-        });
-    },
-
-    // Level 2: Treat Game
-    () => {
-        storyContent.innerHTML = `
-            <h2>Level 2: Buddy's Favourite Treat 🦴</h2>
-            <p>Three treats! Which one is Buddy's absolute favourite?</p>
-            <div class="treat-container">
-                <span class="treat-item" data-treat="carrot">🥕</span>
-                <span class="treat-item" data-treat="bone">🦴</span>
-                <span class="treat-item" data-treat="broccoli">🥦</span>
-            </div>
-            <p id="treatMsg">Pick wisely!</p>
-        `;
-
-        document.querySelectorAll('.treat-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                const treat = e.target.getAttribute('data-treat');
-                const msg = document.getElementById('treatMsg');
-                if (treat === 'bone') {
-                    msg.innerText = "Yummy! Buddy loves bones best! 🎉";
-                    setTimeout(() => loadLevel(3), 1200);
-                } else if (treat === 'carrot') {
-                    msg.innerText = "Crunchy, but not my favourite! Try again 🐰";
-                } else {
-                    msg.innerText = "Blech! Broccoli is for humans! 🥦🤢";
-                }
-            });
-        });
-    },
-
-    // Level 3: Relationship Question
-    () => {
-        storyContent.innerHTML = `
-            <h2>Level 3: A Gentle Question 🌸</h2>
-            <p>Before I continue...<br>My human wanted me to ask...</p>
-            <button class="btn btn-choice" data-status="single">❤️ I'm single</button><br>
-            <button class="btn btn-choice" data-status="committed">💛 I'm committed</button><br>
-            <button class="btn btn-choice" data-status="none">🌼 I'd rather not answer</button>
-        `;
-
-        document.querySelectorAll('.btn-choice').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const status = e.target.getAttribute('data-status');
-                if (status === 'committed') {
-                    storyContent.innerHTML = `
-                        <h2>Thank you for sharing! 💛</h2>
-                        <p>I hope this little adventure still made you smile 😊</p>
-                        <button class="btn" onclick="location.reload()">Start Over</button>
-                    `;
-                } else {
-                    loadLevel(4);
-                }
-            });
-        });
-    },
-
-    // Level 4: Memory Puzzle
-    () => {
-        storyContent.innerHTML = `
-            <h2>Level 4: Memory Puzzle 🧩</h2>
-            <p>Tap all the tiles to light them up!</p>
-            <div class="puzzle-grid" id="puzzleGrid"></div>
-        `;
-
-        const grid = document.getElementById('puzzleGrid');
-        let solvedCount = 0;
-        for (let i = 0; i < 9; i++) {
-            const tile = document.createElement('div');
-            tile.className = 'puzzle-tile';
-            tile.innerText = i + 1;
-            tile.addEventListener('click', () => {
-                if (!tile.classList.contains('solved')) {
-                    tile.classList.add('solved');
-                    solvedCount++;
-                    if (solvedCount === 9) {
-                        setTimeout(() => loadLevel(5), 1000);
-                    }
-                }
-            });
-            grid.appendChild(tile);
-        }
-    },
-
-    // Level 5: Poem Reveal
-    () => {
-        storyContent.innerHTML = `
-            <h2>Level 5: A Special Letter 💌</h2>
-            <div class="poem-box" id="poemBox"></div>
-            <button class="btn" id="nextLevelBtn" style="display:none;">Continue 🐾</button>
-        `;
-
-        const poemText = `Like morning sun upon the dew,
-My days grow brighter knowing you.
-A gentle soul, a heart so sweet,
-With every laugh, my world's complete.`;
-
-        let i = 0;
-        const poemBox = document.getElementById('poemBox');
-        function typeWriter() {
-            if (i < poemText.length) {
-                poemBox.innerHTML += poemText.charAt(i);
-                i++;
-                setTimeout(typeWriter, 50);
-            } else {
-                document.getElementById('nextLevelBtn').style.display = 'inline-block';
-            }
-        }
-        typeWriter();
-
-        document.getElementById('nextLevelBtn').addEventListener('click', () => loadLevel(6));
-    },
-
-    // Level 6: Final Screen
-    () => {
-        storyContent.innerHTML = `
-            <h2>A Final Question ☕</h2>
-            <p>I just wanted you to know<br>I really enjoy talking to you.<br>Would you like to go for coffee sometime?</p>
-            <button class="btn final-ans" data-resp="yes">😊 Yes</button>
-            <button class="btn btn-secondary final-ans" data-resp="maybe">🤍 Maybe</button>
-            <button class="btn btn-secondary final-ans" data-resp="think">🌸 Let me think</button>
-            <p id="finalResponse" style="margin-top: 15px; font-weight: 600; color: var(--accent-pink);"></p>
-        `;
-
-        document.querySelectorAll('.final-ans').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const resp = e.target.getAttribute('data-resp');
-                const finalResp = document.getElementById('finalResponse');
-                if (resp === 'yes') {
-                    finalResp.innerText = "Yay! My human is going to be so happy! ☕✨";
-                } else if (resp === 'maybe') {
-                    finalResp.innerText = "No rush at all! Take all the time you need 🤍";
-                } else {
-                    finalResp.innerText = "Take a breather! Buddy will wait right here 🌸🐾";
-                }
-            });
-        });
-    }
-];
-
-function loadLevel(levelIndex) {
-    currentLevel = levelIndex;
-    const card = document.getElementById('ui-card');
-    card.style.animation = 'none';
-    card.offsetHeight; /* trigger reflow */
-    card.style.animation = 'cardPopUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
-    
-    // Play subtle background audio on first interaction
+    // Attempt audio playback on first interaction
     const bgMusic = document.getElementById('bgMusic');
-    bgMusic.play().catch(() => {});
+    function playAudio() {
+        if (bgMusic.paused) {
+            bgMusic.volume = 0.2;
+            bgMusic.play().catch(() => {});
+        }
+    }
 
-    levels[currentLevel]();
-}
+    // --- OPENING SCENE ---
+    const petMeBtn = document.getElementById('petMeBtn');
+    petMeBtn.addEventListener('click', (e) => {
+        playAudio();
+        const rect = petMeBtn.getBoundingClientRect();
+        createHearts(rect.left + rect.width / 2, rect.top, 8);
+        
+        // Dog happy jump animation
+        const dog = document.getElementById('openingDog');
+        dog.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        dog.style.transform = 'translateY(-30px) scale(1.1)';
+        
+        setTimeout(() => {
+            showScene('scene-level1');
+        }, 700);
+    });
 
-// Initialize Opening Scene
-loadLevel(0);
+    // --- LEVEL 1: FETCH GAME ---
+    let successfulFetches = 0;
+    const fetchCountEl = document.getElementById('fetchCount');
+    const tennisBall = document.getElementById('tennisBall');
+    const fetchArea = document.getElementById('fetchArea');
+    const fetchDog = document.getElementById('fetchDog');
+
+    let isDragging = false;
+    let ballStartX = 50, ballStartY = 50;
+
+    tennisBall.addEventListener('mousedown', startDrag);
+    tennisBall.addEventListener('touchstart', startDrag);
+
+    function startDrag(e) {
+        isDragging = true;
+        playAudio();
+    }
+
+    window.addEventListener('mousemove', dragMove);
+    window.addEventListener('touchmove', (e) => dragMove(e.touches[0]));
+
+    function dragMove(e) {
+        if (!isDragging) return;
+        const rect = fetchArea.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+        let y = e.clientY - rect.top;
+        x = Math.max(20, Math.min(x, rect.width - 40));
+        y = Math.max(20, Math.min(y, rect.height - 40));
+        tennisBall.style.position = 'absolute';
+        tennisBall.style.left = `${x}px`;
+        tennisBall.style.top = `${y}px`;
+    }
+
+    window.addEventListener('mouseup', endDrag);
+    window.addEventListener('touchend', endDrag);
+
+    function endDrag(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        // Animate dog running to ball
+        fetchDog.style.transition = 'transform 0.6s ease-in-out';
+        fetchDog.style.transform = 'translateX(120px) scale(1.05)';
+        
+        setTimeout(() => {
+            tennisBall.style.display = 'none';
+            createHearts(window.innerWidth / 2, window.innerHeight / 2, 3);
+            
+            setTimeout(() => {
+                fetchDog.style.transform = 'translateX(0) scale(1)';
+                successfulFetches++;
+                fetchCountEl.textContent = successfulFetches;
+                
+                if (successfulFetches >= 3) {
+                    setTimeout(() => showScene('scene-level2'), 800);
+                } else {
+                    tennisBall.style.display = 'block';
+                    tennisBall.style.position = 'static';
+                }
+            }, 600);
+        }, 600);
+    }
+
+    // --- LEVEL 2: TREAT GAME ---
+    const treatCards = document.querySelectorAll('.treat-card');
+    const treatFeedback = document.getElementById('treatFeedback');
+
+    treatCards.forEach(card => {
+        card.addEventListener('click', (e) => {
+            const treatType = card.getAttribute('data-treat');
+            const rect = card.getBoundingClientRect();
+            
+            if (treatType === 'bone') {
+                createHearts(rect.left + rect.width / 2, rect.top, 6);
+                treatFeedback.style.color = '#2a9d8f';
+                treatFeedback.textContent = "Yum! Buddy's absolute favourite! 🎉";
+                setTimeout(() => showScene('scene-level3'), 1200);
+            } else if (treatType === 'broccoli') {
+                treatFeedback.style.color = '#e76f51';
+                treatFeedback.textContent = "Blech! Buddy wrinkled his nose! Try again! 🐶🥦";
+            } else {
+                treatFeedback.style.color = '#e76f51';
+                treatFeedback.textContent = "Too sour! Buddy made a funny face! 🍋✨";
+            }
+        });
+    });
+
+    // --- LEVEL 3: RELATIONSHIP QUESTION ---
+    const optionBtns = document.querySelectorAll('.option-btn');
+    optionBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const status = btn.getAttribute('data-status');
+            if (status === 'committed') {
+                showScene('scene-committed');
+            } else {
+                showScene('scene-level4');
+                initPuzzle();
+            }
+        });
+    });
+
+    // --- LEVEL 4: MEMORY PUZZLE ---
+    const puzzleGrid = document.getElementById('puzzleGrid');
+    let nextExpectedTile = 1;
+
+    function initPuzzle() {
+        puzzleGrid.innerHTML = '';
+        nextExpectedTile = 1;
+        let numbers = [1, 2, 3, 4, 5, 6, 7, 8, '🐾'];
+        numbers.sort(() => Math.random() - 0.5);
+
+        numbers.forEach(num => {
+            const tile = document.createElement('div');
+            tile.classList.add('puzzle-tile');
+            tile.textContent = num;
+            tile.addEventListener('click', () => {
+                if (num === nextExpectedTile) {
+                    tile.classList.add('solved');
+                    nextExpectedTile++;
+                    createHearts(tile.getBoundingClientRect().x, tile.getBoundingClientRect().y, 2);
+                    if (nextExpectedTile > 8) {
+                        setTimeout(() => showScene('scene-level5'), 1000);
+                    }
+                } else if (num !== '🐾') {
+                    tile.style.transform = 'translateX(5px)';
+                    setTimeout(() => tile.style.transform = 'none', 200);
+                }
+            });
+            puzzleGrid.appendChild(tile);
+        });
+    }
+
+    // --- LEVEL 5: POEM REVEAL ---
+    const envelope = document.getElementById('envelope');
+    const envelopeContainer = document.getElementById('envelopeContainer');
+    const poemCard = document.getElementById('poemCard');
+    const poemText = document.getElementById('poemText');
+
+    const fullPoem = `In quiet moments, soft and sweet,
+Where busy days and daydreams meet,
+A gentle thought begins to grow,
+Like morning light upon the snow.
+
+It isn't loud, it isn't grand,
+Just like a warm touch of a hand,
+A smiling face, a friendly spark,
+That brings a brightness to the dark.
+
+And as these little moments blend,
+It's nice to share them with a friend. 🌸`;
+
+    envelopeContainer.addEventListener('click', () => {
+        envelope.classList.add('open');
+        playAudio();
+        setTimeout(() => {
+            envelopeContainer.classList.add('hidden');
+            poemCard.classList.remove('hidden');
+            typeWriterPoem();
+        }, 700);
+    });
+
+    function typeWriterPoem() {
+        let i = 0;
+        poemText.textContent = '';
+        function type() {
+            if (i < fullPoem.length) {
+                poemText.textContent += fullPoem.charAt(i);
+                i++;
+                setTimeout(type, 25);
+            } else {
+                // Add a continue button after poem finishes
+                const nextBtn = document.createElement('button');
+                nextBtn.classList.add('btn-glass');
+                nextBtn.style.marginTop = '15px';
+                nextBtn.textContent = 'Continue 🐾';
+                nextBtn.addEventListener('click', () => showScene('scene-level6'));
+                poemCard.appendChild(nextBtn);
+            }
+        }
+        type();
+    }
+
+    // --- LEVEL 6: FINAL PROPOSAL SCREEN ---
+    const respBtns = document.querySelectorAll('.resp-btn');
+    const responseDisplay = document.getElementById('responseDisplay');
+
+    respBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const resp = btn.getAttribute('data-resp');
+            const rect = btn.getBoundingClientRect();
+            createHearts(rect.left, rect.top, 6);
+
+            if (resp === 'yes') {
+                responseDisplay.textContent = "Yay! Buddy is doing happy tail wags! ☕🐾 See you soon!";
+            } else if (resp === 'maybe') {
+                responseDisplay.textContent = "That's completely okay! Take all the time you need. 😊";
+            } else {
+                responseDisplay.textContent = "No rush at all! Buddy and I are just glad you stopped by. 🌸";
+            }
+        });
+    });
+});
