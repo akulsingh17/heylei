@@ -1,219 +1,534 @@
-*{box-sizing:border-box}html,body{height:100%}body{margin:0;font-family:Quicksand,system-ui,sans-serif;color:#5a4b66;overflow-x:hidden;background:linear-gradient(180deg,#ffeef4 0%,#f8f4ff 45%,#e8fbff 100%)}.sky,.app,#petals,#sparkles{position:fixed;inset:0;pointer-events:none}.cloud{position:absolute;width:140px;height:42px;border-radius:999px;background:rgba(255,255,255,.45);filter:blur(1px);box-shadow:35px 0 0 10px rgba(255,255,255,.4),65px 5px 0 0 rgba(255,255,255,.35),95px -2px 0 8px rgba(255,255,255,.3);animation:drift linear infinite}.cloud:before,.cloud:after{content:"";position:absolute;background:inherit;border-radius:50%}.cloud:before{width:55px;height:55px;left:14px;top:-24px}.cloud:after{width:70px;height:70px;right:18px;top:-34px}.cloud-1{top:8%;left:5%;animation-duration:70s}.cloud-2{top:18%;right:0;animation-duration:90s;transform:scale(.8)}.cloud-3{top:62%;left:-2%;animation-duration:110s;transform:scale(.65)}@keyframes drift{from{transform:translateX(-10vw)}to{transform:translateX(110vw)}}.app{display:grid;place-items:center;min-height:100vh;padding:18px}.scene{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transform:scale(.98);transition:opacity .7s ease,transform .7s ease}.scene.active{opacity:1;transform:scale(1);pointer-events:auto}.glass{backdrop-filter:blur(18px);background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.25));border:1px solid rgba(255,255,255,.5);box-shadow:0 20px 60px rgba(123,79,150,.15);border-radius:32px}.card{width:min(920px,92vw);padding:24px;position:relative;overflow:hidden}.card:before{content:"";position:absolute;inset:-2px;background:radial-gradient(circle at top left,rgba(255,255,255,.9),transparent 35%),radial-gradient(circle at bottom right,rgba(255,204,240,.25),transparent 30%);pointer-events:none}.intro-card,.final-card,.poem-card{text-align:center}.dog-wrap{display:grid;place-items:center;margin:6px auto 18px;filter:drop-shadow(0 16px 30px rgba(152,104,168,.24))}.dog{position:relative;width:170px;height:150px;animation:breath 2.8s ease-in-out infinite}.dog.small{transform:scale(.85)}.dog .ear,.dog .face,.dog .tail,.dog .paws span{position:absolute;background:#d79a4f}.dog .ear{width:40px;height:58px;top:10px;border-radius:48% 48% 52% 52%}.dog .ear.left{left:18px;transform:rotate(-28deg)}.dog .ear.right{right:18px;transform:rotate(28deg)}.dog .face{width:150px;height:120px;left:10px;top:18px;border-radius:48% 48% 44% 44%;background:linear-gradient(180deg,#f9d39a,#e6a95c)}.dog .eye{position:absolute;width:10px;height:12px;background:#4c3b2f;border-radius:50%;top:48px;animation:blink 4.5s infinite}.dog .eye.left{left:42px}.dog .eye.right{right:42px}.dog .snout{position:absolute;width:76px;height:58px;left:37px;top:58px;background:#ffe6c8;border-radius:46% 46% 40% 40%}.dog .nose{position:absolute;width:12px;height:8px;left:32px;top:12px;background:#4a342b;border-radius:50% 50% 60% 60%}.dog .mouth{position:absolute;width:18px;height:8px;left:29px;top:24px;border-bottom:3px solid #7b4f38;border-radius:0 0 16px 16px}.dog .tail{width:60px;height:16px;right:-6px;bottom:38px;border-radius:16px;background:#d79a4f;transform-origin:left center;animation:wag .55s ease-in-out infinite alternate}.dog .paws span{width:18px;height:30px;bottom:-2px;border-radius:10px}.dog .paws span:first-child{left:46px}.dog .paws span:last-child{right:46px}.floating{animation:float 4s ease-in-out infinite}.sit{animation:sit 1s ease-in-out infinite alternate}.bubble{display:inline-block;max-width:46ch;padding:18px 20px;border-radius:24px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.75);box-shadow:0 10px 30px rgba(110,80,140,.1);font-size:clamp(1.05rem,2.2vw,1.35rem);line-height:1.55}.btn,.treat{border:0;cursor:pointer;font:inherit;transition:transform .2s ease,box-shadow .2s ease,background .2s ease}.btn{padding:14px 20px;border-radius:999px;background:linear-gradient(135deg,#ffb7d3,#ffd8a8);color:#5a4068;font-weight:700;box-shadow:0 10px 25px rgba(255,154,191,.35)}.btn:hover,.treat:hover{transform:translateY(-3px) scale(1.02)}.bounce{animation:bounce 1.5s infinite}.glow{box-shadow:0 0 0 0 rgba(255,170,200,.55);animation:pulseGlow 2s infinite}.choices{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:18px}.choices.stack{flex-direction:column;align-items:center}.msg{min-height:28px;margin-top:14px;font-weight:600;color:#6a4f73}.playfield{position:relative;height:250px;margin-top:16px;border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,.14));overflow:hidden;border:1px solid rgba(255,255,255,.5)}.ball{position:absolute;left:18%;top:62%;width:64px;height:64px;display:grid;place-items:center;font-size:2rem;cursor:grab;user-select:none;touch-action:none;filter:drop-shadow(0 8px 12px rgba(0,0,0,.12));transition:transform .2s}.ball.throwing{animation:arc .8s ease-in-out}.dog-runner{position:absolute;left:64%;top:55%;transform:translateY(-50%);opacity:0;transition:transform .45s ease,opacity .3s}.dog-runner.run{opacity:1;animation:run 1s linear 1}.dog-runner.catch{transform:translate(-10%, -58%) scale(1.06)}.throw-meter{position:absolute;left:18px;right:18px;bottom:16px;height:10px;border-radius:999px;background:rgba(255,255,255,.4);overflow:hidden}.throw-meter div{height:100%;width:0;background:linear-gradient(90deg,#ff9fc6,#ffd98a);transition:width .3s ease}.treat{width:110px;height:110px;border-radius:28px;background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.28));display:grid;place-items:center;font-size:2.1rem;box-shadow:0 12px 25px rgba(150,110,160,.15)}.treat span{display:block;font-size:.92rem;margin-top:4px}.puzzle{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:min(360px,86vw);margin:18px auto 0}.tile{aspect-ratio:1;border-radius:20px;background:linear-gradient(135deg,#ffd5e6,#d9f5ff);display:grid;place-items:center;font-weight:700;font-size:1.4rem;cursor:pointer;box-shadow:0 8px 20px rgba(120,100,150,.12)}.envelope{font-size:5rem;filter:drop-shadow(0 12px 18px rgba(0,0,0,.12));transform-origin:center;cursor:pointer}.poem{white-space:pre-wrap;min-height:220px;margin:12px auto 0;max-width:52ch;font-family:"Cormorant Garamond",serif;font-size:clamp(1.4rem,3vw,2rem);line-height:1.5;text-align:left}.final-card{display:grid;place-items:center}.response{min-width:150px}.run-paws::after{content:"🐾";position:absolute;font-size:1.1rem;animation:fadeUp .9s ease forwards}.hidden{display:none!important}@keyframes breath{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.01)}}@keyframes wag{from{transform:rotate(-18deg)}to{transform:rotate(18deg)}}@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@keyframes sit{from{transform:translateY(0)}to{transform:translateY(2px)}}@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,170,200,.35)}50%{box-shadow:0 0 0 18px rgba(255,170,200,0)}}@keyframes run{0%{transform:translate(-50%, -50%)}100%{transform:translate(12%, -50%)}}@keyframes arc{0%{transform:translate(0,0) scale(1)}40%{transform:translate(180px,-130px) scale(.9)}100%{transform:translate(340px,16px) scale(1)}}@keyframes fadeUp{to{transform:translateY(-36px);opacity:0}}@media (max-width:700px){.card{padding:18px;border-radius:24px}.choices{gap:10px}.btn,.treat{width:100%}.bubble{font-size:1rem}.poem{font-size:1.35rem}}#petals .petal{position:absolute;top:-20px;width:14px;height:14px;background:radial-gradient(circle at 30% 30%,#fff,#ffbfd8 55%,transparent 56%);border-radius:50% 0 50% 50%;opacity:.7;animation:petalFall linear infinite;filter:blur(.2px)}#sparkles .spark{position:absolute;width:6px;height:6px;background:rgba(255,255,255,.95);border-radius:50%;box-shadow:0 0 12px 3px rgba(255,255,255,.55);animation:sparkle 3.8s linear infinite}@keyframes petalFall{to{transform:translateY(110vh) rotate(360deg)}}@keyframes sparkle{0%,100%{transform:scale(.5);opacity:.15}50%{transform:scale(1.4);opacity:1}}\n```
-
-## script.js
-```javascript
-const scenes=[...document.querySelectorAll('.scene')];
-const show=id=>scenes.forEach(s=>s.classList.toggle('active',s.id===id));
-
-const petals=document.getElementById('petals');
-const sparkles=document.getElementById('sparkles');
-const app=document.getElementById('app');
-
-const poemText=`there is a quiet peace your presence leaves behind
-somehow, my eyes always find you before my thoughts do
-perhaps the silence between us has been speaking all along
-and your eyes.....they hold a depth that makes me forget where I end and where you belong`;
-
-const messages={
-  yes:'That makes Boogie very happy 🥹✨ Coffee date approved.',
-  maybe:'Aww, Boogie will wait patiently and keep smiling 🤍',
-  think:'No rush at all. Boogie believes in gentle timelines 🌷'
-};
-
-for(let i=0;i<22;i++){
-  const p=document.createElement('i');
-  p.className='petal';
-  p.style.left=Math.random()*100+'vw';
-  p.style.animationDelay=Math.random()*12+'s';
-  p.style.animationDuration=8+Math.random()*10+'s';
-  p.style.opacity=.55+Math.random()*.4;
-  petals.appendChild(p);
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  overflow:hidden;
+  font-family:Quicksand,system-ui,sans-serif;
+  color:#5e4d6a;
+  background:linear-gradient(180deg,#ffeaf3 0%,#f8f2ff 50%,#dff8ff 100%);
 }
 
-for(let i=0;i<40;i++){
-  const s=document.createElement('i');
-  s.className='spark';
-  s.style.left=Math.random()*100+'vw';
-  s.style.top=Math.random()*100+'vh';
-  s.style.animationDelay=Math.random()*6+'s';
-  sparkles.appendChild(s);
+.sky,#petals,#sparkles,.app{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
 }
 
-document.getElementById('petMe').addEventListener('click',()=>{
-  spawnHearts();
-  show('scene-level1');
-});
+.sky{
+  background:
+    radial-gradient(circle at 50% 0%,rgba(255,255,255,.85),transparent 42%),
+    linear-gradient(180deg,#ffeaf3 0%,#fdf7ff 55%,#dff8ff 100%);
+}
 
-function spawnHearts(){
-  for(let i=0;i<16;i++){
-    const h=document.createElement('div');
-    h.textContent='💖';
-    h.style.position='fixed';
-    h.style.left='50%';
-    h.style.top='65%';
-    h.style.fontSize='1.3rem';
-    h.style.transform='translate(-50%,-50%)';
-    h.style.transition='all 1s ease';
-    document.body.appendChild(h);
-    requestAnimationFrame(()=>{
-      h.style.left=50+(Math.random()*36-18)+'%';
-      h.style.top=30+Math.random()*20+'%';
-      h.style.opacity='0';
-      h.style.transform='translate(-50%,-50%) scale(1.8)';
-    });
-    setTimeout(()=>h.remove(),1100);
+.card{
+  width:min(980px,92vw);
+  padding:24px 22px;
+  border-radius:30px;
+  position:relative;
+  pointer-events:auto;
+  overflow:hidden;
+}
+
+.glass{
+  background:linear-gradient(180deg,rgba(255,255,255,.58),rgba(255,255,255,.24));
+  border:1px solid rgba(255,255,255,.55);
+  backdrop-filter:blur(18px);
+  box-shadow:0 18px 60px rgba(107,72,128,.16);
+}
+
+.scene{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  opacity:0;
+  transform:scale(.985);
+  transition:opacity .65s ease,transform .65s ease;
+}
+
+.scene.active{
+  opacity:1;
+  transform:scale(1);
+  pointer-events:auto;
+}
+
+.stage,.final,.poem-card,.intro{
+  text-align:center;
+}
+
+h1{
+  margin:0 0 10px;
+  font-size:clamp(1.5rem,3vw,2.35rem);
+}
+
+p{
+  margin:0;
+  line-height:1.6;
+  font-size:clamp(1rem,2vw,1.08rem);
+}
+
+.bubble{
+  display:inline-block;
+  max-width:44ch;
+  margin:12px auto 18px;
+  padding:18px 20px;
+  border-radius:24px;
+  background:rgba(255,255,255,.75);
+  box-shadow:0 10px 30px rgba(121,84,146,.12);
+  font-size:clamp(1rem,2.2vw,1.28rem);
+  line-height:1.6;
+}
+
+.btn,.treat{
+  border:none;
+  cursor:pointer;
+  font:inherit;
+}
+
+.btn{
+  padding:14px 20px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#ffb8d4,#ffdca8);
+  color:#5b4166;
+  font-weight:800;
+  box-shadow:0 10px 25px rgba(255,158,192,.36);
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+
+.btn:hover,.treat:hover{
+  transform:translateY(-3px) scale(1.02);
+}
+
+.glow{
+  animation:glow 2s infinite;
+}
+
+.choices{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+
+.choices.stack{
+  flex-direction:column;
+  align-items:center;
+}
+
+.msg{
+  min-height:28px;
+  margin-top:14px;
+  font-weight:700;
+  color:#6c5177;
+}
+
+.field{
+  position:relative;
+  height:270px;
+  margin-top:14px;
+  border-radius:24px;
+  overflow:hidden;
+  background:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,.14));
+  border:1px solid rgba(255,255,255,.5);
+}
+
+.horizon{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:46%;
+  background:linear-gradient(180deg,rgba(198,245,214,.0),rgba(176,233,196,.55));
+}
+
+.ball{
+  position:absolute;
+  left:14%;
+  top:62%;
+  width:66px;
+  height:66px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  font-size:2rem;
+  user-select:none;
+  touch-action:none;
+  cursor:grab;
+  filter:drop-shadow(0 10px 16px rgba(0,0,0,.14));
+  transition:transform .15s;
+}
+
+.ball.fly{
+  animation:arc .95s ease-in-out;
+}
+
+.runner{
+  position:absolute;
+  top:56%;
+  left:68%;
+  transform:translateY(-50%);
+  opacity:0;
+}
+
+.runner.running{
+  opacity:1;
+  animation:dash 1s linear 1;
+}
+
+.meter{
+  position:absolute;
+  left:20px;
+  right:20px;
+  bottom:14px;
+  height:11px;
+  border-radius:999px;
+  overflow:hidden;
+  background:rgba(255,255,255,.42);
+}
+
+.meter div{
+  width:0;
+  height:100%;
+  background:linear-gradient(90deg,#ff9bc4,#ffdc88);
+  transition:width .25s;
+}
+
+.treat{
+  width:120px;
+  height:120px;
+  border-radius:30px;
+  background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(255,255,255,.26));
+  box-shadow:0 12px 26px rgba(143,111,166,.15);
+  display:grid;
+  place-items:center;
+  font-size:2.2rem;
+  flex-direction:column;
+  color:#4f3b5d;
+}
+
+.treat span{
+  display:block;
+  margin-top:3px;
+  font-size:.92rem;
+}
+
+.puzzle{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  width:min(360px,88vw);
+  margin:16px auto 0;
+}
+
+.tile{
+  aspect-ratio:1;
+  border:none;
+  border-radius:20px;
+  background:linear-gradient(135deg,#ffd8e5,#d9f6ff);
+  display:grid;
+  place-items:center;
+  font-size:1.45rem;
+  font-weight:800;
+  color:#5a4766;
+  box-shadow:0 8px 20px rgba(118,101,151,.12);
+  cursor:pointer;
+}
+
+.envelope{
+  font-size:5rem;
+  cursor:pointer;
+  filter:drop-shadow(0 14px 20px rgba(0,0,0,.12));
+  display:inline-block;
+  transform-origin:center;
+}
+
+.poem{
+  white-space:pre-wrap;
+  text-align:left;
+  font-family:"Cormorant Garamond",serif;
+  max-width:52ch;
+  margin:16px auto 0;
+  font-size:clamp(1.45rem,3vw,2.05rem);
+  line-height:1.45;
+  min-height:230px;
+}
+
+.response{
+  min-width:150px;
+}
+
+.dog-wrap{
+  display:grid;
+  place-items:center;
+  filter:drop-shadow(0 16px 28px rgba(130,86,150,.25));
+  margin:0 auto 18px;
+}
+
+.dog{
+  position:relative;
+  width:250px;
+  height:170px;
+  transform:scale(.92);
+}
+
+.dog .shadow{
+  position:absolute;
+  left:50%;
+  bottom:2px;
+  width:142px;
+  height:22px;
+  background:rgba(0,0,0,.13);
+  border-radius:50%;
+  transform:translateX(-50%);
+  filter:blur(8px);
+}
+
+.dog .body{
+  position:absolute;
+  left:55px;
+  top:60px;
+  width:126px;
+  height:78px;
+  background:linear-gradient(180deg,#f8cf8f,#e0a95c);
+  border-radius:44% 52% 46% 48%/48% 52% 42% 44%;
+  transform-origin:center;
+  animation:breath 2.8s ease-in-out infinite;
+}
+
+.dog .head{
+  position:absolute;
+  left:90px;
+  top:22px;
+  width:96px;
+  height:86px;
+  border-radius:46% 46% 42% 42%;
+  background:linear-gradient(180deg,#f9d89f,#eab15f);
+  transform-origin:bottom center;
+  animation:tilt 5s ease-in-out infinite;
+}
+
+.dog .muzzle{
+  position:absolute;
+  left:18px;
+  top:42px;
+  width:58px;
+  height:36px;
+  background:#ffe8cb;
+  border-radius:48% 48% 42% 42%;
+}
+
+.dog .nose{
+  position:absolute;
+  left:39px;
+  top:50px;
+  width:12px;
+  height:9px;
+  background:#4d352d;
+  border-radius:50%;
+}
+
+.dog .mouth{
+  position:absolute;
+  left:36px;
+  top:61px;
+  width:18px;
+  height:8px;
+  border-bottom:3px solid #7a4f39;
+  border-radius:0 0 18px 18px;
+}
+
+.dog .ear{
+  position:absolute;
+  top:4px;
+  width:28px;
+  height:52px;
+  background:#d79b50;
+  border-radius:54% 54% 42% 42%;
+}
+
+.dog .ear-l{left:-8px;transform:rotate(-26deg)}
+.dog .ear-r{right:-8px;transform:rotate(26deg)}
+
+.dog .eye{
+  position:absolute;
+  top:28px;
+  width:10px;
+  height:12px;
+  background:#4b382d;
+  border-radius:50%;
+  animation:blink 4.8s infinite;
+}
+
+.dog .eye-l{left:25px}
+.dog .eye-r{right:25px}
+
+.dog .blush{
+  position:absolute;
+  top:42px;
+  width:14px;
+  height:8px;
+  background:rgba(255,147,170,.45);
+  filter:blur(1px);
+  border-radius:50%;
+}
+
+.dog .blush-l{left:12px}
+.dog .blush-r{right:12px}
+
+.dog .tail{
+  position:absolute;
+  right:20px;
+  top:76px;
+  width:68px;
+  height:14px;
+  background:#d59a4f;
+  border-radius:999px;
+  transform-origin:left center;
+  animation:wag .45s ease-in-out infinite alternate;
+}
+
+.dog .leg{
+  position:absolute;
+  bottom:2px;
+  width:20px;
+  height:50px;
+  background:#d79c52;
+  border-radius:12px;
+}
+
+.dog .leg::after{
+  content:"";
+  position:absolute;
+  left:-2px;
+  right:-2px;
+  bottom:-4px;
+  height:10px;
+  background:#f3d1a2;
+  border-radius:50%;
+}
+
+.dog .leg-l1{left:72px}
+.dog .leg-r1{left:102px}
+.dog .leg-l2{left:136px}
+.dog .leg-r2{left:166px}
+
+.dog-idle{
+  animation:walkIn 1.6s ease forwards;
+}
+
+.dog-run{
+  animation:runBounce .8s ease-in-out infinite;
+}
+
+.dog-sit{
+  animation:sit 1.4s ease-in-out infinite alternate;
+}
+
+.intro-stage{
+  transform:translateY(2px);
+}
+
+#petals .petal{
+  position:absolute;
+  top:-20px;
+  width:14px;
+  height:14px;
+  background:radial-gradient(circle at 30% 30%,#fff,#ffc0d8 55%,transparent 56%);
+  border-radius:50% 0 50% 50%;
+  opacity:.7;
+  animation:petalFall linear infinite;
+}
+
+#sparkles .spark{
+  position:absolute;
+  width:6px;
+  height:6px;
+  background:rgba(255,255,255,.95);
+  border-radius:50%;
+  box-shadow:0 0 12px 3px rgba(255,255,255,.55);
+  animation:sparkle 3.8s linear infinite;
+}
+
+.finalText{
+  max-width:44ch;
+  margin:0 auto 16px;
+  font-size:clamp(1.1rem,2.2vw,1.35rem);
+  line-height:1.65;
+}
+
+@keyframes petalFall{
+  to{transform:translateY(110vh) rotate(360deg)}
+}
+
+@keyframes sparkle{
+  0%,100%{transform:scale(.5);opacity:.15}
+  50%{transform:scale(1.5);opacity:1}
+}
+
+@keyframes walkIn{
+  0%{transform:translateX(-120%) scale(.96)}
+  70%{transform:translateX(8%) scale(1)}
+  100%{transform:translateX(0) scale(1)}
+}
+
+@keyframes wag{
+  from{transform:rotate(-18deg)}
+  to{transform:rotate(18deg)}
+}
+
+@keyframes blink{
+  0%,92%,100%{transform:scaleY(1)}
+  95%{transform:scaleY(.08)}
+}
+
+@keyframes breath{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-2px) scale(1.01)}
+}
+
+@keyframes tilt{
+  0%,100%{transform:rotate(0deg)}
+  50%{transform:rotate(4deg)}
+}
+
+@keyframes dash{
+  0%{transform:translate(-50%,-50%) scaleX(1)}
+  50%{transform:translate(-14%,-53%) scaleX(1.04)}
+  100%{transform:translate(0,-50%) scaleX(1)}
+}
+
+@keyframes runBounce{
+  0%,100%{transform:translateY(0) rotate(-1deg)}
+  50%{transform:translateY(-3px) rotate(1deg)}
+}
+
+@keyframes sit{
+  0%{transform:translateY(0)}
+  100%{transform:translateY(2px)}
+}
+
+@keyframes glow{
+  0%,100%{box-shadow:0 10px 25px rgba(255,158,192,.36)}
+  50%{box-shadow:0 0 0 16px rgba(255,158,192,0)}
+}
+
+@keyframes arc{
+  0%{transform:translate(0,0) scale(1)}
+  40%{transform:translate(190px,-140px) scale(.92)}
+  100%{transform:translate(360px,16px) scale(1)}
+}
+
+@media (max-width:700px){
+  body{overflow:auto}
+  .card{
+    width:94vw;
+    padding:18px;
+    border-radius:24px;
   }
+  .choices{gap:10px}
+  .btn,.treat{width:100%}
+  .dog{transform:scale(.74)}
+  .field{height:240px}
+  .poem{font-size:1.34rem;min-height:200px}
 }
-
-const ball=document.getElementById('ball'),
-  dogRunner=document.getElementById('dogRunner'),
-  throwsBar=document.getElementById('throwsBar');
-
-let throws=0,drag=false,poemStarted=false;
-
-ball.addEventListener('pointerdown',e=>{
-  drag=true;
-  ball.setPointerCapture(e.pointerId);
-  ball.style.cursor='grabbing';
-});
-
-ball.addEventListener('pointermove',e=>{
-  if(!drag) return;
-  const r=app.getBoundingClientRect();
-  ball.style.left=Math.min(88,Math.max(4,((e.clientX-r.left)/r.width)*100))+'%';
-  ball.style.top=Math.min(76,Math.max(20,((e.clientY-r.top)/r.height)*100))+'%';
-});
-
-ball.addEventListener('pointerup',()=>{
-  if(!drag) return;
-  drag=false;
-  ball.style.cursor='grab';
-  throwBall();
-});
-
-function throwBall(){
-  ball.classList.remove('throwing');
-  void ball.offsetWidth;
-  ball.classList.add('throwing');
-  dogRunner.classList.add('run');
-  setTimeout(()=>dogRunner.classList.add('catch'),520);
-  setTimeout(()=>{
-    dogRunner.classList.remove('run','catch');
-    ball.style.left='18%';
-    ball.style.top='62%';
-    ball.classList.remove('throwing');
-    throws++;
-    throwsBar.style.width=throws/3*100+'%';
-    document.getElementById('level1Msg').textContent=throws<3?`Nice throw ${throws}/3!`:'';
-    if(throws>=3){
-      document.getElementById('level1Msg').textContent='Boogie got the ball three times!';
-      setTimeout(()=>show('scene-level2'),900);
-    }
-  },900);
-}
-
-document.querySelectorAll('.treat').forEach(btn=>btn.addEventListener('click',()=>{
-  const ok=btn.dataset.correct==='true';
-  document.getElementById('level2Msg').textContent=ok?'Boogie does a tiny happy spin! 🎉':'Boogie makes a very dramatic but polite face 😅';
-  if(ok) setTimeout(()=>show('scene-level3'),1000);
-}));
-
-document.querySelectorAll('.option').forEach(btn=>btn.addEventListener('click',()=>{
-  const state=btn.dataset.state;
-  const msg=document.getElementById('level3Msg');
-  if(state==='committed'){
-    msg.textContent='I hope this little adventure still made you smile 😊';
-    setTimeout(()=>show('scene-level6'),1200);
-  }else{
-    msg.textContent='Thanks for answering gently. Boogie keeps going with a wag!';
-    setTimeout(()=>show('scene-level4'),1000);
-  }
-}));
-
-const puzzle=document.getElementById('puzzle');
-let tiles=[1,2,3,4,5,6,7,8,0],selected=null;
-
-function renderPuzzle(){
-  puzzle.innerHTML='';
-  tiles.forEach((n,i)=>{
-    const t=document.createElement('button');
-    t.className='tile';
-    t.textContent=n||'🐶';
-    t.dataset.idx=i;
-    if(selected===i)t.style.outline='3px solid #ff9fc6';
-    t.addEventListener('click',()=>{
-      if(selected===null){
-        selected=i;
-        renderPuzzle();
-        return;
-      }
-      const a=tiles[selected],b=tiles[i];
-      [tiles[selected],tiles[i]]=[b,a];
-      selected=null;
-      renderPuzzle();
-      checkPuzzle();
-    });
-    puzzle.appendChild(t);
-  });
-}
-
-function checkPuzzle(){
-  if(tiles.join('')==='123456780'){
-    document.getElementById('level4Msg').textContent='Perfect! The envelope appears.';
-    setTimeout(()=>{
-      show('scene-level5');
-      startPoem();
-    },900);
-  }
-}
-
-renderPuzzle();
-
-function startPoem(){
-  if(poemStarted)return;
-  poemStarted=true;
-  const el=document.getElementById('poem');
-  const env=document.getElementById('envelope');
-  env.animate([{transform:'scale(1)'},{transform:'scale(1.12)'},{transform:'scale(1)'}],{duration:700,iterations:2});
-  let i=0;
-  const timer=setInterval(()=>{
-    el.textContent=poemText.slice(0,++i);
-    if(i>=poemText.length){
-      clearInterval(timer);
-      document.getElementById('level5Msg').textContent='';
-      setTimeout(()=>show('scene-level6'),2200);
-    }
-  },28);
-}
-
-document.getElementById('envelope').addEventListener('click',startPoem);
-
-document.querySelectorAll('.response').forEach(btn=>btn.addEventListener('click',()=>{
-  document.getElementById('level6Msg').textContent=messages[btn.dataset.response];
-}));
-
-setInterval(()=>{
-  const s=document.createElement('span');
-  s.className='petal';
-  s.textContent='✨';
-  s.style.left=Math.random()*100+'vw';
-  s.style.top='-20px';
-  s.style.animation='fadeUp 2.2s ease forwards';
-  sparkles.appendChild(s);
-  setTimeout(()=>s.remove(),2300);
-},1800);
-```
-
-## Quick note
-These files are the exact ones to paste into GitHub Pages, but they assume your `index.html` already contains these IDs/classes:
-- `petals`
-- `sparkles`
-- `petMe`
-- `ball`
-- `dogRunner`
-- `throwsBar`
-- `puzzle`
-- `poem`
-- `envelope`
-
-If you want, I can also give you a **fully corrected index.html** so all three files match perfectly.
