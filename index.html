@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Adventure 🐾</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Sacramento&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background Canvas for Falling Petals, Clouds, and Sparkles -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Main Container -->
+    <main id="app-container">
+        <!-- Dynamic UI Card (Glassmorphism) -->
+        <div id="ui-card" class="glass-card">
+            <div id="story-content">
+                <!-- Injected dynamically via script.js -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Interactive Canvas for the Golden Retriever Buddy -->
+    <div id="dog-stage">
+        <canvas id="dogCanvas"></canvas>
+    </div>
+
+    <!-- Audio Element for Soft Background Music/Chimes -->
+    <audio id="bgMusic" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-gentle-dreams-489.mp3" type="audio/mpeg">
+    </audio>
+
+    <script src="script.js"></script>
+</body>
+</html>
