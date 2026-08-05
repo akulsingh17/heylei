@@ -1,268 +1,206 @@
-/* script.js */
-document.addEventListener('DOMContentLoaded', () => {
-    // Environment Effects: Sakura Petals Generator
-    const envEffects = document.getElementById('envEffects');
-    function createPetal() {
-        const petal = document.createElement('div');
-        petal.classList.add('petal');
-        const size = Math.random() * 8 + 8;
-        petal.style.width = `${size}px`;
-        petal.style.height = `${size * 1.4}px`;
-        petal.style.left = `${Math.random() * 100}vw`;
-        petal.style.animationDuration = `${Math.random() * 6 + 6}s`;
-        petal.style.animationDelay = `${Math.random() * 5}s`;
-        envEffects.appendChild(petal);
-        setTimeout(() => petal.remove(), 12000);
-    }
-    for (let i = 0; i < 15; i++) createPetal();
-    setInterval(createPetal, 800);
+## script.js
+```javascript
+const scenes=[...document.querySelectorAll('.scene')];
+const show=id=>scenes.forEach(s=>s.classList.toggle('active',s.id===id));
 
-    // Scene Navigation Manager
-    function showScene(sceneId) {
-        document.querySelectorAll('.scene').forEach(scene => {
-            scene.classList.remove('active');
-        });
-        document.getElementById(sceneId).classList.add('active');
-    }
+const petals=document.getElementById('petals');
+const sparkles=document.getElementById('sparkles');
+const app=document.getElementById('app');
 
-    // Helper: Floating Hearts Effect
-    function createHearts(x, y, count = 5) {
-        for (let i = 0; i < count; i++) {
-            const heart = document.createElement('div');
-            heart.classList.add('floating-heart');
-            heart.innerHTML = ['❤️', '💖', '✨', '💛'][Math.floor(Math.random() * 4)];
-            heart.style.left = `${x + (Math.random() * 60 - 30)}px`;
-            heart.style.top = `${y + (Math.random() * 40 - 20)}px`;
-            document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 1500);
-        }
-    }
+const poemText=`there is a quiet peace your presence leaves behind
+somehow, my eyes always find you before my thoughts do
+perhaps the silence between us has been speaking all along
+and your eyes.....they hold a depth that makes me forget where I end and where you belong`;
 
-    // Attempt audio playback on first interaction
-    const bgMusic = document.getElementById('bgMusic');
-    function playAudio() {
-        if (bgMusic.paused) {
-            bgMusic.volume = 0.2;
-            bgMusic.play().catch(() => {});
-        }
-    }
+const messages={
+  yes:'That makes Boogie very happy 🥹✨ Coffee date approved.',
+  maybe:'Aww, Boogie will wait patiently and keep smiling 🤍',
+  think:'No rush at all. Boogie believes in gentle timelines 🌷'
+};
 
-    // --- OPENING SCENE ---
-    const petMeBtn = document.getElementById('petMeBtn');
-    petMeBtn.addEventListener('click', (e) => {
-        playAudio();
-        const rect = petMeBtn.getBoundingClientRect();
-        createHearts(rect.left + rect.width / 2, rect.top, 8);
-        
-        // Dog happy jump animation
-        const dog = document.getElementById('openingDog');
-        dog.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-        dog.style.transform = 'translateY(-30px) scale(1.1)';
-        
-        setTimeout(() => {
-            showScene('scene-level1');
-        }, 700);
-    });
+for(let i=0;i<22;i++){
+  const p=document.createElement('i');
+  p.className='petal';
+  p.style.left=Math.random()*100+'vw';
+  p.style.animationDelay=Math.random()*12+'s';
+  p.style.animationDuration=8+Math.random()*10+'s';
+  p.style.opacity=.55+Math.random()*.4;
+  petals.appendChild(p);
+}
 
-    // --- LEVEL 1: FETCH GAME ---
-    let successfulFetches = 0;
-    const fetchCountEl = document.getElementById('fetchCount');
-    const tennisBall = document.getElementById('tennisBall');
-    const fetchArea = document.getElementById('fetchArea');
-    const fetchDog = document.getElementById('fetchDog');
+for(let i=0;i<40;i++){
+  const s=document.createElement('i');
+  s.className='spark';
+  s.style.left=Math.random()*100+'vw';
+  s.style.top=Math.random()*100+'vh';
+  s.style.animationDelay=Math.random()*6+'s';
+  sparkles.appendChild(s);
+}
 
-    let isDragging = false;
-    let ballStartX = 50, ballStartY = 50;
-
-    tennisBall.addEventListener('mousedown', startDrag);
-    tennisBall.addEventListener('touchstart', startDrag);
-
-    function startDrag(e) {
-        isDragging = true;
-        playAudio();
-    }
-
-    window.addEventListener('mousemove', dragMove);
-    window.addEventListener('touchmove', (e) => dragMove(e.touches[0]));
-
-    function dragMove(e) {
-        if (!isDragging) return;
-        const rect = fetchArea.getBoundingClientRect();
-        let x = e.clientX - rect.left;
-        let y = e.clientY - rect.top;
-        x = Math.max(20, Math.min(x, rect.width - 40));
-        y = Math.max(20, Math.min(y, rect.height - 40));
-        tennisBall.style.position = 'absolute';
-        tennisBall.style.left = `${x}px`;
-        tennisBall.style.top = `${y}px`;
-    }
-
-    window.addEventListener('mouseup', endDrag);
-    window.addEventListener('touchend', endDrag);
-
-    function endDrag(e) {
-        if (!isDragging) return;
-        isDragging = false;
-        
-        // Animate dog running to ball
-        fetchDog.style.transition = 'transform 0.6s ease-in-out';
-        fetchDog.style.transform = 'translateX(120px) scale(1.05)';
-        
-        setTimeout(() => {
-            tennisBall.style.display = 'none';
-            createHearts(window.innerWidth / 2, window.innerHeight / 2, 3);
-            
-            setTimeout(() => {
-                fetchDog.style.transform = 'translateX(0) scale(1)';
-                successfulFetches++;
-                fetchCountEl.textContent = successfulFetches;
-                
-                if (successfulFetches >= 3) {
-                    setTimeout(() => showScene('scene-level2'), 800);
-                } else {
-                    tennisBall.style.display = 'block';
-                    tennisBall.style.position = 'static';
-                }
-            }, 600);
-        }, 600);
-    }
-
-    // --- LEVEL 2: TREAT GAME ---
-    const treatCards = document.querySelectorAll('.treat-card');
-    const treatFeedback = document.getElementById('treatFeedback');
-
-    treatCards.forEach(card => {
-        card.addEventListener('click', (e) => {
-            const treatType = card.getAttribute('data-treat');
-            const rect = card.getBoundingClientRect();
-            
-            if (treatType === 'bone') {
-                createHearts(rect.left + rect.width / 2, rect.top, 6);
-                treatFeedback.style.color = '#2a9d8f';
-                treatFeedback.textContent = "Yum! Buddy's absolute favourite! 🎉";
-                setTimeout(() => showScene('scene-level3'), 1200);
-            } else if (treatType === 'broccoli') {
-                treatFeedback.style.color = '#e76f51';
-                treatFeedback.textContent = "Blech! Buddy wrinkled his nose! Try again! 🐶🥦";
-            } else {
-                treatFeedback.style.color = '#e76f51';
-                treatFeedback.textContent = "Too sour! Buddy made a funny face! 🍋✨";
-            }
-        });
-    });
-
-    // --- LEVEL 3: RELATIONSHIP QUESTION ---
-    const optionBtns = document.querySelectorAll('.option-btn');
-    optionBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const status = btn.getAttribute('data-status');
-            if (status === 'committed') {
-                showScene('scene-committed');
-            } else {
-                showScene('scene-level4');
-                initPuzzle();
-            }
-        });
-    });
-
-    // --- LEVEL 4: MEMORY PUZZLE ---
-    const puzzleGrid = document.getElementById('puzzleGrid');
-    let nextExpectedTile = 1;
-
-    function initPuzzle() {
-        puzzleGrid.innerHTML = '';
-        nextExpectedTile = 1;
-        let numbers = [1, 2, 3, 4, 5, 6, 7, 8, '🐾'];
-        numbers.sort(() => Math.random() - 0.5);
-
-        numbers.forEach(num => {
-            const tile = document.createElement('div');
-            tile.classList.add('puzzle-tile');
-            tile.textContent = num;
-            tile.addEventListener('click', () => {
-                if (num === nextExpectedTile) {
-                    tile.classList.add('solved');
-                    nextExpectedTile++;
-                    createHearts(tile.getBoundingClientRect().x, tile.getBoundingClientRect().y, 2);
-                    if (nextExpectedTile > 8) {
-                        setTimeout(() => showScene('scene-level5'), 1000);
-                    }
-                } else if (num !== '🐾') {
-                    tile.style.transform = 'translateX(5px)';
-                    setTimeout(() => tile.style.transform = 'none', 200);
-                }
-            });
-            puzzleGrid.appendChild(tile);
-        });
-    }
-
-    // --- LEVEL 5: POEM REVEAL ---
-    const envelope = document.getElementById('envelope');
-    const envelopeContainer = document.getElementById('envelopeContainer');
-    const poemCard = document.getElementById('poemCard');
-    const poemText = document.getElementById('poemText');
-
-    const fullPoem = `In quiet moments, soft and sweet,
-Where busy days and daydreams meet,
-A gentle thought begins to grow,
-Like morning light upon the snow.
-
-It isn't loud, it isn't grand,
-Just like a warm touch of a hand,
-A smiling face, a friendly spark,
-That brings a brightness to the dark.
-
-And as these little moments blend,
-It's nice to share them with a friend. 🌸`;
-
-    envelopeContainer.addEventListener('click', () => {
-        envelope.classList.add('open');
-        playAudio();
-        setTimeout(() => {
-            envelopeContainer.classList.add('hidden');
-            poemCard.classList.remove('hidden');
-            typeWriterPoem();
-        }, 700);
-    });
-
-    function typeWriterPoem() {
-        let i = 0;
-        poemText.textContent = '';
-        function type() {
-            if (i < fullPoem.length) {
-                poemText.textContent += fullPoem.charAt(i);
-                i++;
-                setTimeout(type, 25);
-            } else {
-                // Add a continue button after poem finishes
-                const nextBtn = document.createElement('button');
-                nextBtn.classList.add('btn-glass');
-                nextBtn.style.marginTop = '15px';
-                nextBtn.textContent = 'Continue 🐾';
-                nextBtn.addEventListener('click', () => showScene('scene-level6'));
-                poemCard.appendChild(nextBtn);
-            }
-        }
-        type();
-    }
-
-    // --- LEVEL 6: FINAL PROPOSAL SCREEN ---
-    const respBtns = document.querySelectorAll('.resp-btn');
-    const responseDisplay = document.getElementById('responseDisplay');
-
-    respBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const resp = btn.getAttribute('data-resp');
-            const rect = btn.getBoundingClientRect();
-            createHearts(rect.left, rect.top, 6);
-
-            if (resp === 'yes') {
-                responseDisplay.textContent = "Yay! Buddy is doing happy tail wags! ☕🐾 See you soon!";
-            } else if (resp === 'maybe') {
-                responseDisplay.textContent = "That's completely okay! Take all the time you need. 😊";
-            } else {
-                responseDisplay.textContent = "No rush at all! Buddy and I are just glad you stopped by. 🌸";
-            }
-        });
-    });
+document.getElementById('petMe').addEventListener('click',()=>{
+  spawnHearts();
+  show('scene-level1');
 });
+
+function spawnHearts(){
+  for(let i=0;i<16;i++){
+    const h=document.createElement('div');
+    h.textContent='💖';
+    h.style.position='fixed';
+    h.style.left='50%';
+    h.style.top='65%';
+    h.style.fontSize='1.3rem';
+    h.style.transform='translate(-50%,-50%)';
+    h.style.transition='all 1s ease';
+    document.body.appendChild(h);
+    requestAnimationFrame(()=>{
+      h.style.left=50+(Math.random()*36-18)+'%';
+      h.style.top=30+Math.random()*20+'%';
+      h.style.opacity='0';
+      h.style.transform='translate(-50%,-50%) scale(1.8)';
+    });
+    setTimeout(()=>h.remove(),1100);
+  }
+}
+
+const ball=document.getElementById('ball'),
+  dogRunner=document.getElementById('dogRunner'),
+  throwsBar=document.getElementById('throwsBar');
+
+let throws=0,drag=false,poemStarted=false;
+
+ball.addEventListener('pointerdown',e=>{
+  drag=true;
+  ball.setPointerCapture(e.pointerId);
+  ball.style.cursor='grabbing';
+});
+
+ball.addEventListener('pointermove',e=>{
+  if(!drag) return;
+  const r=app.getBoundingClientRect();
+  ball.style.left=Math.min(88,Math.max(4,((e.clientX-r.left)/r.width)*100))+'%';
+  ball.style.top=Math.min(76,Math.max(20,((e.clientY-r.top)/r.height)*100))+'%';
+});
+
+ball.addEventListener('pointerup',()=>{
+  if(!drag) return;
+  drag=false;
+  ball.style.cursor='grab';
+  throwBall();
+});
+
+function throwBall(){
+  ball.classList.remove('throwing');
+  void ball.offsetWidth;
+  ball.classList.add('throwing');
+  dogRunner.classList.add('run');
+  setTimeout(()=>dogRunner.classList.add('catch'),520);
+  setTimeout(()=>{
+    dogRunner.classList.remove('run','catch');
+    ball.style.left='18%';
+    ball.style.top='62%';
+    ball.classList.remove('throwing');
+    throws++;
+    throwsBar.style.width=throws/3*100+'%';
+    document.getElementById('level1Msg').textContent=throws<3?`Nice throw ${throws}/3!`:'';
+    if(throws>=3){
+      document.getElementById('level1Msg').textContent='Boogie got the ball three times!';
+      setTimeout(()=>show('scene-level2'),900);
+    }
+  },900);
+}
+
+document.querySelectorAll('.treat').forEach(btn=>btn.addEventListener('click',()=>{
+  const ok=btn.dataset.correct==='true';
+  document.getElementById('level2Msg').textContent=ok?'Boogie does a tiny happy spin! 🎉':'Boogie makes a very dramatic but polite face 😅';
+  if(ok) setTimeout(()=>show('scene-level3'),1000);
+}));
+
+document.querySelectorAll('.option').forEach(btn=>btn.addEventListener('click',()=>{
+  const state=btn.dataset.state;
+  const msg=document.getElementById('level3Msg');
+  if(state==='committed'){
+    msg.textContent='I hope this little adventure still made you smile 😊';
+    setTimeout(()=>show('scene-level6'),1200);
+  }else{
+    msg.textContent='Thanks for answering gently. Boogie keeps going with a wag!';
+    setTimeout(()=>show('scene-level4'),1000);
+  }
+}));
+
+const puzzle=document.getElementById('puzzle');
+let tiles=[1,2,3,4,5,6,7,8,0],selected=null;
+
+function renderPuzzle(){
+  puzzle.innerHTML='';
+  tiles.forEach((n,i)=>{
+    const t=document.createElement('button');
+    t.className='tile';
+    t.textContent=n||'🐶';
+    t.dataset.idx=i;
+    if(selected===i)t.style.outline='3px solid #ff9fc6';
+    t.addEventListener('click',()=>{
+      if(selected===null){
+        selected=i;
+        renderPuzzle();
+        return;
+      }
+      const a=tiles[selected],b=tiles[i];
+      [tiles[selected],tiles[i]]=[b,a];
+      selected=null;
+      renderPuzzle();
+      checkPuzzle();
+    });
+    puzzle.appendChild(t);
+  });
+}
+
+function checkPuzzle(){
+  if(tiles.join('')==='123456780'){
+    document.getElementById('level4Msg').textContent='Perfect! The envelope appears.';
+    setTimeout(()=>{
+      show('scene-level5');
+      startPoem();
+    },900);
+  }
+}
+
+renderPuzzle();
+
+function startPoem(){
+  if(poemStarted)return;
+  poemStarted=true;
+  const el=document.getElementById('poem');
+  const env=document.getElementById('envelope');
+  env.animate([{transform:'scale(1)'},{transform:'scale(1.12)'},{transform:'scale(1)'}],{duration:700,iterations:2});
+  let i=0;
+  const timer=setInterval(()=>{
+    el.textContent=poemText.slice(0,++i);
+    if(i>=poemText.length){
+      clearInterval(timer);
+      document.getElementById('level5Msg').textContent='';
+      setTimeout(()=>show('scene-level6'),2200);
+    }
+  },28);
+}
+
+document.getElementById('envelope').addEventListener('click',startPoem);
+
+document.querySelectorAll('.response').forEach(btn=>btn.addEventListener('click',()=>{
+  document.getElementById('level6Msg').textContent=messages[btn.dataset.response];
+}));
+
+setInterval(()=>{
+  const s=document.createElement('span');
+  s.className='petal';
+  s.textContent='✨';
+  s.style.left=Math.random()*100+'vw';
+  s.style.top='-20px';
+  s.style.animation='fadeUp 2.2s ease forwards';
+  sparkles.appendChild(s);
+  setTimeout(()=>s.remove(),2300);
+},1800);
+```
+
+
+- `envelope`
