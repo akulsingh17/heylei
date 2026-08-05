@@ -1,179 +1,43 @@
-<!-- index.html -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Special Journey 🐾</title>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Sacramento&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Boogie's Pastel Adventure</title>
+  <meta name="description" content="A wholesome pastel interactive adventure with a golden retriever guide." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <!-- Background Effects Container -->
-    <div class="env-effects" id="envEffects">
-        <div class="cloud cloud-1"></div>
-        <div class="cloud cloud-2"></div>
-        <div class="cloud cloud-3"></div>
-    </div>
+  <div class="sky">
+    <div class="cloud cloud-1"></div><div class="cloud cloud-2"></div><div class="cloud cloud-3"></div>
+  </div>
+  <div id="petals"></div><div id="sparkles"></div>
+  <main class="app" id="app">
+    <section class="scene active" id="scene-intro">
+      <div class="glass card intro-card">
+        <div class="dog-wrap intro-dog floating" aria-label="cute golden retriever">
+          <div class="dog"><div class="ear left"></div><div class="ear right"></div><div class="face"><div class="eye left"></div><div class="eye right"></div><div class="snout"><div class="nose"></div><div class="mouth"></div></div></div><div class="tail"></div><div class="paws"><span></span><span></span></div></div>
+        </div>
+        <div class="bubble">Hi 😊 My human asked me to show you something. Would you come with me?</div>
+        <button class="btn glow bounce" id="petMe">Pet Me 🐾</button>
+      </div>
+    </section>
 
-    <!-- Main Container -->
-    <main class="game-container">
-        <!-- OPENING SCENE -->
-        <section id="scene-opening" class="scene active">
-            <div class="dog-stage">
-                <div class="speech-bubble" id="speechBubble">
-                    <p>Hi 😊<br>My human asked me to show you something.<br>Would you come with me?</p>
-                </div>
-                <!-- CSS Dog Avatar -->
-                <div class="dog-avatar" id="openingDog">
-                    <div class="dog-head">
-                        <div class="ear left"></div>
-                        <div class="ear right"></div>
-                        <div class="snout">
-                            <div class="nose"></div>
-                            <div class="smile"></div>
-                        </div>
-                        <div class="eyes">
-                            <div class="eye left"></div>
-                            <div class="eye right"></div>
-                        </div>
-                        <div class="blush left"></div>
-                        <div class="blush right"></div>
-                    </div>
-                    <div class="dog-body">
-                        <div class="tail"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="action-area">
-                <button class="btn-glass pulse" id="petMeBtn">Pet Me 🐾</button>
-            </div>
-        </section>
+    <section class="scene" id="scene-level1"><div class="glass card"><h2>Level 1 · Fetch Game</h2><p>Drag the tennis ball. Boogie will chase it and bring it back.</p><div class="playfield"><div id="dogRunner" class="dog-runner"><div class="dog small"><div class="ear left"></div><div class="ear right"></div><div class="face"><div class="eye left"></div><div class="eye right"></div><div class="snout"><div class="nose"></div><div class="mouth"></div></div></div><div class="tail"></div><div class="paws"><span></span><span></span></div></div></div><div id="ball" class="ball" draggable="true">🎾</div><div class="throw-meter"><div id="throwsBar"></div></div></div><div id="level1Msg" class="msg"></div></div></section>
 
-        <!-- LEVEL 1: FETCH GAME -->
-        <section id="scene-level1" class="scene">
-            <div class="level-header">
-                <h2>Level 1: Fetch! 🎾</h2>
-                <p>Drag the tennis ball to throw it for Buddy! (<span id="fetchCount">0</span>/3 successful)</p>
-            </div>
-            <div class="play-area" id="fetchArea">
-                <div class="dog-avatar" id="fetchDog">
-                    <div class="dog-head">
-                        <div class="ear left"></div>
-                        <div class="ear right"></div>
-                        <div class="snout"><div class="nose"></div></div>
-                        <div class="eyes"><div class="eye left"></div><div class="eye right"></div></div>
-                    </div>
-                    <div class="dog-body"><div class="tail"></div></div>
-                </div>
-                <div class="tennis-ball" id="tennisBall" draggable="true">🎾</div>
-            </div>
-        </section>
+    <section class="scene" id="scene-level2"><div class="glass card"><h2>Level 2 · Treat Game</h2><p>Pick Boogie's favourite treat.</p><div class="choices"><button class="treat bone" data-correct="false">🦴<span>Bone</span></button><button class="treat pizza" data-correct="true">🍕<span>Pizza</span></button><button class="treat broccoli" data-correct="false">🥦<span>Broccoli</span></button></div><div id="level2Msg" class="msg"></div></div></section>
 
-        <!-- LEVEL 2: TREAT GAME -->
-        <section id="scene-level2" class="scene">
-            <div class="level-header">
-                <h2>Level 2: Snack Time! 🍪</h2>
-                <p>Pick Buddy's absolute favourite treat!</p>
-            </div>
-            <div class="treats-container">
-                <div class="treat-card" data-treat="broccoli">🥦<p>Broccoli</p></div>
-                <div class="treat-card" data-treat="bone">🦴<p>Golden Biscuit</p></div>
-                <div class="treat-card" data-treat="lemon">🍋<p>Lemon Slice</p></div>
-            </div>
-            <div class="treat-feedback" id="treatFeedback"></div>
-        </section>
+    <section class="scene" id="scene-level3"><div class="glass card"><h2>Level 3 · A Gentle Question</h2><p>Before I continue... My human wanted me to ask...</p><div class="choices stack"><button class="btn option" data-state="single">❤️ I'm single</button><button class="btn option" data-state="committed">💛 I'm committed</button><button class="btn option" data-state="pass">🌼 I'd rather not answer</button></div><div id="level3Msg" class="msg"></div></div></section>
 
-        <!-- LEVEL 3: RELATIONSHIP QUESTION -->
-        <section id="scene-level3" class="scene">
-            <div class="level-header">
-                <h2>Level 3: A Little Curious...</h2>
-                <p class="story-text">"Before I continue... My human wanted me to ask..."</p>
-            </div>
-            <div class="options-container">
-                <button class="btn-glass option-btn" data-status="single">❤️ I'm single</button>
-                <button class="btn-glass option-btn" data-status="committed">💛 I'm committed</button>
-                <button class="btn-glass option-btn" data-status="skip">🌼 I'd rather not answer</button>
-            </div>
-        </section>
+    <section class="scene" id="scene-level4"><div class="glass card"><h2>Level 4 · Memory Puzzle</h2><p>Swap the tiles to complete the picture.</p><div id="puzzle" class="puzzle"></div><div id="level4Msg" class="msg"></div></div></section>
 
-        <!-- COMMITTED ENDING SCREEN -->
-        <section id="scene-committed" class="scene">
-            <div class="dog-stage">
-                <div class="dog-avatar sitting">
-                    <div class="dog-head">
-                        <div class="ear left"></div>
-                        <div class="ear right"></div>
-                        <div class="snout"><div class="nose"></div><div class="smile"></div></div>
-                        <div class="eyes"><div class="eye left"></div><div class="eye right"></div></div>
-                    </div>
-                    <div class="dog-body"></div>
-                </div>
-            </div>
-            <div class="message-box glass-panel">
-                <p id="committedText">I hope this little adventure still made you smile 😊</p>
-            </div>
-        </section>
+    <section class="scene" id="scene-level5"><div class="glass card poem-card"><h2>Level 5 · Poem Reveal</h2><div class="envelope" id="envelope">✉️</div><pre id="poem" class="poem"></pre><audio id="piano" preload="auto"></audio><div id="level5Msg" class="msg"></div></div></section>
 
-        <!-- LEVEL 4: MEMORY PUZZLE -->
-        <section id="scene-level4" class="scene">
-            <div class="level-header">
-                <h2>Level 4: Unlocking Memories 🧩</h2>
-                <p>Click the tiles in order from 1 to 8 to clear the path!</p>
-            </div>
-            <div class="puzzle-grid" id="puzzleGrid">
-                <!-- Dynamically populated via JS -->
-            </div>
-        </section>
-
-        <!-- LEVEL 5: POEM REVEAL -->
-        <section id="scene-level5" class="scene">
-            <div class="envelope-container" id="envelopeContainer">
-                <div class="envelope" id="envelope">
-                    <div class="envelope-flap"></div>
-                    <div class="envelope-pocket"></div>
-                    <div class="letter-preview">💌 Click to open</div>
-                </div>
-            </div>
-            <div class="poem-card glass-panel hidden" id="poemCard">
-                <div class="dog-avatar mini">
-                    <div class="dog-head"><div class="ear left"></div><div class="ear right"></div><div class="snout"><div class="nose"></div></div></div>
-                </div>
-                <div class="poem-text" id="poemText"></div>
-            </div>
-        </section>
-
-        <!-- LEVEL 6: FINAL SCREEN -->
-        <section id="scene-level6" class="scene">
-            <div class="dog-stage">
-                <div class="dog-avatar sitting">
-                    <div class="dog-head">
-                        <div class="ear left"></div>
-                        <div class="ear right"></div>
-                        <div class="snout"><div class="nose"></div><div class="smile"></div></div>
-                        <div class="eyes"><div class="eye left"></div><div class="eye right"></div></div>
-                        <div class="blush left"></div><div class="blush right"></div>
-                    </div>
-                    <div class="dog-body"></div>
-                </div>
-            </div>
-            <div class="message-box glass-panel final-proposal">
-                <p>I just wanted you to know<br>I really enjoy talking to you.<br><strong>Would you like to go for coffee sometime?</strong></p>
-                <div class="proposal-buttons">
-                    <button class="btn-glass resp-btn" data-resp="yes">😊 Yes</button>
-                    <button class="btn-glass resp-btn" data-resp="maybe">🤍 Maybe</button>
-                    <button class="btn-glass resp-btn" data-resp="think">🌸 Let me think</button>
-                </div>
-                <p class="response-display" id="responseDisplay"></p>
-            </div>
-        </section>
-    </main>
-
-    <!-- Audio element for soft piano atmosphere -->
-    <audio id="bgMusic" loop>
-        <source src="https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg" type="audio/ogg">
-    </audio>
-
-    <script src="script.js"></script>
+    <section class="scene" id="scene-level6"><div class="glass card final-card"><div class="dog-wrap final-dog"><div class="dog small sit"><div class="ear left"></div><div class="ear right"></div><div class="face"><div class="eye left"></div><div class="eye right"></div><div class="snout"><div class="nose"></div><div class="mouth"></div></div></div><div class="tail"></div><div class="paws"><span></span><span></span></div></div></div><h2>Level 6 · Final Screen</h2><p id="finalText">I just wanted you to know I really enjoy talking to you. Would you like to go for coffee sometime?</p><div class="choices stack"><button class="btn response" data-response="yes">😊 Yes</button><button class="btn response" data-response="maybe">🤍 Maybe</button><button class="btn response" data-response="think">🌸 Let me think</button></div><div id="level6Msg" class="msg"></div></div></section>
+  </main>
+  <script src="script.js"></script>
 </body>
 </html>
