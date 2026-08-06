@@ -303,11 +303,18 @@
   /* ---------------------------------------------------------------------
      3. INTRO: PET ME BUTTON
   --------------------------------------------------------------------- */
-  $('#btn-pet-me').addEventListener('click', () => {
+  let petMeClicked = false;
+  const petMeBtn = $('#btn-pet-me');
+  petMeBtn.addEventListener('click', () => {
+    if (petMeClicked) return; // guard against double-taps firing this twice
+    petMeClicked = true;
+    petMeBtn.disabled = true;
+
     ensureAudio();
+    hideSpeech(); // dismiss the "would you come with me?" bubble immediately, no lingering
     setDogState('jump');
     popHearts(8);
-    say("Yippee! Let's go 🐾", 1800);
+    requestAnimationFrame(() => say("Yippee! Let's go 🐾", 1500));
     setTimeout(() => {
       goToScene('level1');
     }, 1000);
@@ -524,65 +531,106 @@
   let playerStep = 0;
   let showingSequence = false;
   let sequenceLength = 4;
+  let memoryGameToken = 0; // invalidates any stray timers from a previous round
+  let memoryTimers = [];
+
+  function clearMemoryTimers() {
+    memoryTimers.forEach((id) => clearTimeout(id));
+    memoryTimers = [];
+  }
+  function memoryTimeout(fn, delay) {
+    const id = setTimeout(fn, delay);
+    memoryTimers.push(id);
+    return id;
+  }
 
   function buildMemoryGrid() {
     memoryGrid.innerHTML = '';
     for (let i = 0; i < 9; i++) {
       const tile = document.createElement('button');
+      tile.type = 'button';
       tile.className = 'paw-tile';
       tile.textContent = '🐾';
       tile.dataset.index = String(i);
+      tile.setAttribute('aria-label', `Paw tile ${i + 1}`);
       tile.addEventListener('click', () => onTileClick(i, tile));
       memoryGrid.appendChild(tile);
     }
   }
 
+  // Never repeat the same tile twice in a row — a same-tile repeat has no
+  // visible "off" moment between the two flashes, so that step becomes
+  // invisible to the player and the round feels broken.
+  function generateSequence(length) {
+    const seq = [];
+    let prev = -1;
+    for (let i = 0; i < length; i++) {
+      let next;
+      do { next = Math.floor(Math.random() * 9); } while (next === prev);
+      seq.push(next);
+      prev = next;
+    }
+    return seq;
+  }
+
   function startMemoryGame() {
+    const token = ++memoryGameToken;
+    clearMemoryTimers();
     buildMemoryGrid();
-    sequence = Array.from({ length: sequenceLength }, () => Math.floor(Math.random() * 9));
+    sequence = generateSequence(sequenceLength);
     playerStep = 0;
     showingSequence = true;
     memoryHint.textContent = 'Watch closely...';
-    setTimeout(() => playSequence(), 700);
+    memoryTimeout(() => { if (token === memoryGameToken) playSequence(token); }, 700);
   }
 
-  function playSequence() {
+  function playSequence(token) {
+    if (token !== memoryGameToken) return;
     const tiles = $$('.paw-tile', memoryGrid);
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i > 0) tiles[sequence[i - 1]].classList.remove('lit');
+    const ON_MS = 420;
+    const GAP_MS = 230;
+
+    function showStep(i) {
+      if (token !== memoryGameToken) return;
       if (i >= sequence.length) {
-        clearInterval(interval);
         showingSequence = false;
         memoryHint.textContent = 'Now repeat the pattern!';
         return;
       }
-      tiles[sequence[i]].classList.add('lit');
-      i++;
-    }, 650);
+      const tile = tiles[sequence[i]];
+      tile.classList.add('lit');
+      memoryTimeout(() => {
+        if (token !== memoryGameToken) return;
+        tile.classList.remove('lit');
+        memoryTimeout(() => showStep(i + 1), GAP_MS);
+      }, ON_MS);
+    }
+    showStep(0);
   }
 
   function onTileClick(index, tileEl) {
     if (showingSequence) return;
     if (index === sequence[playerStep]) {
       tileEl.classList.add('correct-flash');
-      setTimeout(() => tileEl.classList.remove('correct-flash'), 300);
+      memoryTimeout(() => tileEl.classList.remove('correct-flash'), 300);
       playerStep++;
       if (playerStep === sequence.length) {
+        const token = memoryGameToken;
         memoryHint.textContent = 'Perfect memory! 🎉';
         setDogState('happy');
         popHearts(6);
         say('Wow, great memory!', 2000);
-        setTimeout(() => goToScene('level5'), 1600);
+        memoryTimeout(() => { if (token === memoryGameToken) goToScene('level5'); }, 1600);
       }
     } else {
+      const token = memoryGameToken;
       tileEl.classList.add('wrong-flash');
-      setTimeout(() => tileEl.classList.remove('wrong-flash'), 300);
+      memoryTimeout(() => tileEl.classList.remove('wrong-flash'), 300);
       memoryHint.textContent = "Oops, that's not it — watch again!";
       say('Almost! Watch again.', 1600);
       playerStep = 0;
       showingSequence = true;
-      setTimeout(() => playSequence(), 900);
+      memoryTimeout(() => { if (token === memoryGameToken) playSequence(token); }, 900);
     }
   }
 
@@ -853,6 +901,10 @@
     wandering = false;
     clearTimeout(wanderTimer);
     clearTimeout(overlapCheckTimer);
+    memoryGameToken++;
+    clearMemoryTimers();
+    petMeClicked = false;
+    petMeBtn.disabled = false;
     resetFetchGame();
     resetTreatGame();
     journey.treatAttempts = 0;
@@ -1074,7 +1126,10 @@
   /* ---------------------------------------------------------------------
      12c. PRELOADER + BUDDY'S ENTRANCE WALK-ON
   --------------------------------------------------------------------- */
+  let preloaderHidden = false;
   function hidePreloader() {
+    if (preloaderHidden) return;
+    preloaderHidden = true;
     const pre = $('#preloader');
     if (!pre) { runIntroEntrance(); return; }
     pre.classList.add('hide');
@@ -1109,8 +1164,12 @@
 
   function startPreloaderSequence() {
     const MIN_VISIBLE = prefersReducedMotion ? 0 : 900;
+    const HARD_CAP = 3200; // never let a slow font load hold the preloader hostage
     const started = performance.now();
+    let finished = false;
     const finish = () => {
+      if (finished) return;
+      finished = true;
       const elapsed = performance.now() - started;
       setTimeout(hidePreloader, Math.max(0, MIN_VISIBLE - elapsed));
     };
@@ -1119,6 +1178,7 @@
     } else {
       finish();
     }
+    setTimeout(finish, HARD_CAP);
   }
 
   /* ---------------------------------------------------------------------
