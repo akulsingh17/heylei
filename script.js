@@ -127,6 +127,8 @@
     dogStage.style.transform = 'translateX(-50%)';
     if (scene === 'level1') {
       dogStage.style.bottom = '8vh';
+    } else if (scene === 'level5') {
+      dogStage.style.left = '12%';
     }
   }
 
@@ -620,8 +622,11 @@
       poemBox.hidden = false;
       scheduleOverlapCheck(200);
       typewriter(poemTextEl, poemLines, 38, () => {
-        scheduleOverlapCheck(150);
-        setTimeout(() => goToScene('level6'), 1400);
+        // give a quiet moment to actually read the poem before anything moves again
+        setTimeout(() => {
+          scheduleOverlapCheck(150);
+          setTimeout(() => goToScene('level6'), 1400);
+        }, 3000);
       });
     }, 700);
   }
