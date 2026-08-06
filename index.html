@@ -1,139 +1,225 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Boogie’s Adventure</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<title>Fur Baby's Adventure 🐾</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>">
 <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-<div class="sky"></div><div class="overlay"></div><div id="petals"></div><div id="sparkles"></div>
-<div id="transition" class="transition"></div>
+<body class="scene-intro">
 
-<main class="app">
-<section class="scene active" id="intro">
-  <div class="card glass intro">
-    <div class="cinema-shot">
-      <div class="dog-hero dog" id="introDog">
-        <div class="shadow"></div>
-        <div class="tail"></div>
-        <div class="body"></div>
-        <div class="leg leg-fl"></div><div class="leg leg-fr"></div><div class="leg leg-bl"></div><div class="leg leg-br"></div>
-        <div class="head">
-          <div class="ear ear-l"></div><div class="ear ear-r"></div>
-          <div class="eye eye-l"></div><div class="eye eye-r"></div>
-          <div class="blush blush-l"></div><div class="blush blush-r"></div>
-          <div class="muzzle"></div><div class="nose"></div><div class="mouth"></div>
+  <!-- ================= PRELOADER ================= -->
+  <div id="preloader">
+    <div class="preloader-inner">
+      <div class="loader-paw">🐾</div>
+      <p>Loading Fur Baby's Adventure…</p>
+    </div>
+  </div>
+
+  <!-- ================= AMBIENT BACKGROUND ================= -->
+  <div class="sky"></div>
+  <div class="light-rays" aria-hidden="true"></div>
+  <div class="clouds" id="clouds" aria-hidden="true"></div>
+  <div class="petals" id="petals" aria-hidden="true"></div>
+  <div class="sparkles" id="sparkles" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
+  <div class="cursor-trail" id="cursor-trail" aria-hidden="true"></div>
+
+  <!-- ================= SOUND TOGGLE ================= -->
+  <button id="sound-toggle" class="icon-btn" aria-label="Toggle sound" title="Toggle soft music">🔇</button>
+
+  <!-- ================= PROGRESS DOTS ================= -->
+  <div class="progress" id="progress" aria-hidden="true">
+    <span class="dot" data-scene="intro"></span>
+    <span class="dot" data-scene="level1"></span>
+    <span class="dot" data-scene="level2"></span>
+    <span class="dot" data-scene="level3"></span>
+    <span class="dot" data-scene="level4"></span>
+    <span class="dot" data-scene="level5"></span>
+    <span class="dot" data-scene="level6"></span>
+  </div>
+
+  <!-- ================= BUDDY THE DOG (persistent character) ================= -->
+  <div id="dog-stage">
+    <div class="dog-spotlight" aria-hidden="true"></div>
+    <div class="paw-trail" id="paw-trail"></div>
+    <div class="speech-bubble" id="speech-bubble"><p id="speech-text"></p></div>
+    <div class="hearts" id="hearts"></div>
+    <svg id="buddy" viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+      <ellipse class="dog-shadow" cx="150" cy="248" rx="82" ry="10"/>
+      <g id="dog-body-group">
+        <!-- tail -->
+        <g id="dog-tail" style="transform-origin:70px 150px;">
+          <path d="M70,150 C40,130 20,150 25,175 C30,195 55,190 70,165 Z" fill="#e8b568"/>
+        </g>
+        <!-- back legs -->
+        <g id="dog-legs-back">
+          <rect x="95" y="195" width="20" height="45" rx="9" fill="#e0aa5f"/>
+          <rect x="195" y="195" width="20" height="45" rx="9" fill="#dba455"/>
+        </g>
+        <!-- body -->
+        <ellipse cx="155" cy="175" rx="85" ry="58" fill="#f2c579"/>
+        <ellipse cx="155" cy="200" rx="55" ry="30" fill="#fbe6bf"/>
+        <!-- front legs -->
+        <g id="dog-legs-front">
+          <rect x="110" y="205" width="20" height="42" rx="9" fill="#f2c579"/>
+          <rect x="185" y="205" width="20" height="42" rx="9" fill="#f2c579"/>
+        </g>
+        <!-- head -->
+        <g id="dog-head" style="transform-origin:150px 120px;">
+          <g id="dog-ear-left" style="transform-origin:100px 90px;">
+            <path d="M100,90 C75,85 65,120 85,145 C100,155 112,130 108,105 Z" fill="#dba455"/>
+          </g>
+          <g id="dog-ear-right" style="transform-origin:205px 90px;">
+            <path d="M205,90 C230,85 240,120 220,145 C205,155 193,130 197,105 Z" fill="#e0aa5f"/>
+          </g>
+          <ellipse cx="152" cy="120" rx="62" ry="55" fill="#f6cf8e"/>
+          <ellipse cx="152" cy="148" rx="38" ry="28" fill="#fff3de"/>
+          <!-- eyes -->
+          <g id="dog-eye-left">
+            <ellipse cx="128" cy="112" rx="10" ry="12" fill="#4a3527"/>
+            <circle cx="131" cy="107" r="3" fill="#fff"/>
+          </g>
+          <g id="dog-eye-right">
+            <ellipse cx="178" cy="112" rx="10" ry="12" fill="#4a3527"/>
+            <circle cx="181" cy="107" r="3" fill="#fff"/>
+          </g>
+          <!-- brows for expression -->
+          <path id="brow-left" class="brow" d="M116,96 Q127,90 140,97" stroke="#c68a3e" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path id="brow-right" class="brow" d="M164,97 Q177,90 188,96" stroke="#c68a3e" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <!-- nose & mouth -->
+          <ellipse cx="152" cy="140" rx="12" ry="9" fill="#5a4432"/>
+          <path id="dog-mouth" d="M152,149 Q152,162 132,160 M152,149 Q152,162 172,160" stroke="#5a4432" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+          <path id="dog-tongue" d="M148,161 Q152,178 158,161 Q153,170 148,161 Z" fill="#f28ba0"/>
+          <!-- cheeks -->
+          <ellipse cx="112" cy="135" rx="10" ry="6" fill="#f6a9a9" opacity="0.55"/>
+          <ellipse cx="192" cy="135" rx="10" ry="6" fill="#f6a9a9" opacity="0.55"/>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ================= SCENES ================= -->
+  <main id="scenes">
+
+    <!-- INTRO -->
+    <section class="scene active" id="scene-intro">
+      <div class="glass-card intro-card">
+        <h1 class="title-script">Fur Baby's Little Adventure</h1>
+        <button class="glow-btn" id="btn-pet-me">Pet Me <span aria-hidden="true">🐾</span></button>
+      </div>
+    </section>
+
+    <!-- LEVEL 1: FETCH -->
+    <section class="scene" id="scene-level1">
+      <div class="glass-card level-card">
+        <h2>Level 1 · Fetch!</h2>
+        <p class="hint">Drag the tennis ball anywhere and let go — Fur Baby will fetch it 🎾</p>
+        <div class="throw-counter">Throws: <span id="throw-count">0</span> / 3</div>
+      </div>
+      <div class="play-area" id="fetch-area">
+        <div class="ball" id="tennis-ball" title="Drag me!">🎾</div>
+      </div>
+    </section>
+
+    <!-- LEVEL 2: TREATS -->
+    <section class="scene" id="scene-level2">
+      <div class="glass-card level-card">
+        <h2>Level 2 · Guess the Treat</h2>
+        <p class="hint">Only one of these is Fur Baby's favorite... can you guess it?</p>
+      </div>
+      <div class="treats" id="treats">
+        <button class="treat-card" data-treat="0"><span class="treat-emoji">🦴</span><span>Bone</span></button>
+        <button class="treat-card" data-treat="1"><span class="treat-emoji">🥜</span><span>Peanut Butter Biscuit</span></button>
+        <button class="treat-card" data-treat="2"><span class="treat-emoji">🥕</span><span>Carrot Stick</span></button>
+      </div>
+      <p class="reaction-text" id="treat-reaction"></p>
+    </section>
+
+    <!-- LEVEL 3: QUESTION -->
+    <section class="scene" id="scene-level3">
+      <div class="glass-card level-card question-card">
+        <h2>Before I continue...</h2>
+        <p class="hint">My human wanted me to ask something 🥺</p>
+        <div class="choice-row">
+          <button class="choice-btn" data-choice="single">❤️ I'm single</button>
+          <button class="choice-btn" data-choice="committed">💛 I'm committed</button>
+          <button class="choice-btn" data-choice="pass">🌼 I'd rather not answer</button>
         </div>
       </div>
-    </div>
-    <div class="bubble">Hi 😊 My human asked me to show you something. Would you come with me?</div>
-    <button class="btn glow" id="petBtn">Pet Me 🐾</button>
-  </div>
-</section>
+    </section>
 
-<section class="scene" id="level1">
-  <div class="card glass">
-    <h1>Level 1 · Fetch Game</h1>
-    <p>Tap or drag the tennis ball three times. Boogie will sprint with cinematic drama.</p>
-    <div class="field">
-      <div class="field-hill"></div>
-      <div class="runner-wrap" id="runnerWrap">
-        <div class="dog dog-run" id="runnerDog">
-          <div class="shadow"></div>
-          <div class="tail"></div>
-          <div class="body"></div>
-          <div class="leg leg-fl"></div><div class="leg leg-fr"></div><div class="leg leg-bl"></div><div class="leg leg-br"></div>
-          <div class="head">
-            <div class="ear ear-l"></div><div class="ear ear-r"></div>
-            <div class="eye eye-l"></div><div class="eye eye-r"></div>
-            <div class="blush blush-l"></div><div class="blush blush-r"></div>
-            <div class="muzzle"></div><div class="nose"></div><div class="mouth"></div>
+    <!-- END SCENE: COMMITTED -->
+    <section class="scene" id="scene-committed">
+      <div class="glass-card level-card end-card">
+        <h2>That's wonderful 💛</h2>
+        <p class="big-line">I hope this little adventure still made you smile 😊</p>
+        <button class="glow-btn subtle" id="btn-restart-1">Start Over</button>
+      </div>
+    </section>
+
+    <!-- LEVEL 4: MEMORY PUZZLE -->
+    <section class="scene" id="scene-level4">
+      <div class="glass-card level-card">
+        <h2>Level 4 · Paw Memory</h2>
+        <p class="hint" id="memory-hint">Watch the paws light up, then repeat the pattern!</p>
+      </div>
+      <div class="memory-grid" id="memory-grid"></div>
+    </section>
+
+    <!-- LEVEL 5: POEM -->
+    <section class="scene" id="scene-level5">
+      <div class="glass-card level-card poem-scene">
+        <h2>Level 5 · A Little Envelope</h2>
+        <div class="envelope" id="envelope">
+          <div class="envelope-flap"></div>
+          <div class="envelope-body"></div>
+          <div class="envelope-letter" id="envelope-letter">💌</div>
+        </div>
+        <p class="hint" id="envelope-hint">Tap the envelope to open it</p>
+        <div class="poem-box" id="poem-box" hidden>
+          <p id="poem-text"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEVEL 6: FINAL -->
+    <section class="scene" id="scene-level6">
+      <div class="glass-card level-card final-card">
+        <p class="final-message">
+          I just wanted you to know<br/>
+          I really enjoy talking to you.<br/>
+          Would you like to go for coffee sometime? ☕
+        </p>
+        <div class="choice-row">
+          <button class="choice-btn" data-final="yes">😊 Yes</button>
+          <button class="choice-btn" data-final="maybe">🤍 Maybe</button>
+          <button class="choice-btn" data-final="think">🌸 Let me think</button>
+        </div>
+        <p class="reaction-text" id="final-reaction"></p>
+
+        <div class="share-panel" id="share-panel" hidden>
+          <p class="hint">Want to let them know what you picked? Totally up to you 🐾</p>
+          <div class="report-card" id="report-card">
+            <div class="report-emoji">🐾</div>
+            <h3>Fur Baby's Adventure Report</h3>
+            <ul id="report-list"></ul>
+            <div class="report-footer">delivered with a wagging tail</div>
           </div>
+          <div class="choice-row">
+            <button class="choice-btn" id="btn-save-image">🖼️ Save as image</button>
+            <button class="choice-btn" id="btn-copy-text">📋 Copy summary</button>
+          </div>
+          <p class="hint" id="share-status"></p>
         </div>
       </div>
-      <div class="ball" id="ball">🎾</div>
-      <div class="paws-trail" id="pawsTrail"></div>
-      <div class="meter"><div id="meterFill"></div></div>
-    </div>
-    <div class="msg" id="m1"></div>
-  </div>
-</section>
+    </section>
 
-<section class="scene" id="level2">
-  <div class="card glass">
-    <h1>Level 2 · Treat Game</h1>
-    <p>Which treat is Boogie’s favourite?</p>
-    <div class="choices">
-      <button class="treat" data-correct="0">🦴<span>Bone</span></button>
-      <button class="treat" data-correct="1">🍕<span>Pizza</span></button>
-      <button class="treat" data-correct="0">🥦<span>Broccoli</span></button>
-    </div>
-    <div class="msg" id="m2"></div>
-  </div>
-</section>
+  </main>
 
-<section class="scene" id="level3">
-  <div class="card glass">
-    <h1>Level 3 · A Gentle Question</h1>
-    <p>Before I continue... My human wanted me to ask...</p>
-    <div class="choices stack">
-      <button class="btn option" data-next="4">❤️ I’m single</button>
-      <button class="btn option" data-next="6">💛 I’m committed</button>
-      <button class="btn option" data-next="4">🌼 I’d rather not answer</button>
-    </div>
-    <div class="msg" id="m3"></div>
-  </div>
-</section>
-
-<section class="scene" id="level4">
-  <div class="card glass">
-    <h1>Level 4 · Memory Puzzle</h1>
-    <p>Tap two tiles to swap them and complete the picture.</p>
-    <div class="puzzle" id="puzzle"></div>
-    <div class="msg" id="m4"></div>
-  </div>
-</section>
-
-<section class="scene" id="level5">
-  <div class="card glass poem-card">
-    <h1>Level 5 · Poem Reveal</h1>
-    <div class="envelope" id="envelope">✉️</div>
-    <pre id="poem"></pre>
-    <div class="msg" id="m5"></div>
-  </div>
-</section>
-
-<section class="scene" id="level6">
-  <div class="card glass final">
-    <div class="dog-wrap">
-      <div class="dog dog-sit" id="finalDog">
-        <div class="shadow"></div>
-        <div class="tail"></div>
-        <div class="body"></div>
-        <div class="leg leg-fl"></div><div class="leg leg-fr"></div><div class="leg leg-bl"></div><div class="leg leg-br"></div>
-        <div class="head">
-          <div class="ear ear-l"></div><div class="ear ear-r"></div>
-          <div class="eye eye-l"></div><div class="eye eye-r"></div>
-          <div class="blush blush-l"></div><div class="blush blush-r"></div>
-          <div class="muzzle"></div><div class="nose"></div><div class="mouth"></div>
-        </div>
-      </div>
-    </div>
-    <h1>Level 6 · Final Screen</h1>
-    <p class="finalText">I just wanted you to know I really enjoy talking to you. Would you like to go for coffee sometime?</p>
-    <div class="choices stack">
-      <button class="btn response" data-reply="yes">😊 Yes</button>
-      <button class="btn response" data-reply="maybe">🤍 Maybe</button>
-      <button class="btn response" data-reply="think">🌸 Let me think</button>
-    </div>
-    <div class="msg" id="m6"></div>
-  </div>
-</section>
-</main>
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
