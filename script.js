@@ -116,6 +116,8 @@
         say("This is the important part...", 3200);
         break;
     }
+    // Fetch is entirely gameplay-driven — never let auto-wander interfere with it.
+    if (name !== 'level1') scheduleOverlapCheck();
   }
 
   // Positions Fur Baby per-scene (via inline style, since #dog-stage default is centered/bottom)
@@ -127,6 +129,11 @@
       dogStage.style.bottom = '8vh';
     }
   }
+
+  const restStateByScene = {
+    intro: 'idle', level1: 'sit', level2: 'sit', level3: 'idle',
+    committed: 'sit', level4: 'sit', level5: 'sit', level6: 'sit',
+  };
 
   /* ---------------------------------------------------------------------
      2. BUDDY: STATES, SPEECH, HEARTS, PAW PRINTS, IDLE BEHAVIOUR
@@ -205,6 +212,91 @@
     const tilt = Math.max(-10, Math.min(10, (e.clientX - cx) / cx * 10));
     dogStage.style.setProperty('--cursor-tilt', `${tilt}deg`);
   });
+
+  /* ---------------------------------------------------------------------
+     2b. AUTO-WANDER — if Fur Baby's resting spot would cover the active
+     card's content (e.g. a tall poem or report card), he patrols side to
+     side instead of sitting still on top of it. Never touches Level 1,
+     which owns his movement entirely for gameplay.
+  --------------------------------------------------------------------- */
+  let wandering = false;
+  let wanderTimer = null;
+  let overlapCheckTimer = null;
+
+  function scheduleOverlapCheck(delay = 550) {
+    if (currentScene === 'level1') return;
+    clearTimeout(overlapCheckTimer);
+    overlapCheckTimer = setTimeout(checkOverlapAndAdapt, delay);
+  }
+
+  function checkOverlapAndAdapt() {
+    if (currentScene === 'level1') { stopWander(); return; }
+    const card = $('.scene.active .glass-card');
+    if (!card) { stopWander(); return; }
+    const cardRect = card.getBoundingClientRect();
+    const dogRect = dogStage.getBoundingClientRect();
+    const overlaps = !(
+      cardRect.bottom < dogRect.top ||
+      cardRect.top > dogRect.bottom ||
+      cardRect.right < dogRect.left ||
+      cardRect.left > dogRect.right
+    );
+    if (overlaps) startWander();
+    else stopWander();
+  }
+
+  function startWander() {
+    if (wandering || currentScene === 'level1') return;
+    wandering = true;
+    say("I'll just scoot over here 🐾", 1800);
+    wanderLoop();
+  }
+
+  function stopWander() {
+    if (!wandering) return;
+    wandering = false;
+    clearTimeout(wanderTimer);
+    centerDogFor(currentScene);
+    setDogState(restStateByScene[currentScene] || 'idle');
+  }
+
+  function wanderLoop() {
+    if (!wandering) return;
+    const halfDog = dogStage.offsetWidth / 2 || 90;
+    const goLeft = Math.random() < 0.5;
+    const targetX = goLeft
+      ? rand(halfDog + 16, Math.max(halfDog + 40, window.innerWidth * 0.22))
+      : rand(Math.min(window.innerWidth * 0.78, window.innerWidth - halfDog - 40), window.innerWidth - halfDog - 16);
+
+    setDogState('run');
+    animateDogRunTo(targetX, () => {
+      if (!wandering) {
+        centerDogFor(currentScene);
+        setDogState(restStateByScene[currentScene] || 'idle');
+        return;
+      }
+      setDogState(pick(['sit', 'idle']));
+      wanderTimer = setTimeout(() => {
+        if (!wandering) return;
+        // re-check whether he's still in the way before the next lap
+        const card = $('.scene.active .glass-card');
+        if (card) {
+          const cardRect = card.getBoundingClientRect();
+          const dogRect = dogStage.getBoundingClientRect();
+          const stillOverlaps = !(
+            cardRect.bottom < dogRect.top ||
+            cardRect.top > dogRect.bottom ||
+            cardRect.right < dogRect.left ||
+            cardRect.left > dogRect.right
+          );
+          if (!stillOverlaps) { stopWander(); return; }
+        }
+        wanderLoop();
+      }, rand(1500, 2600));
+    });
+  }
+
+  window.addEventListener('resize', () => scheduleOverlapCheck(300));
 
   /* ---------------------------------------------------------------------
      3. INTRO: PET ME BUTTON
@@ -526,7 +618,9 @@
     playAmbientPiano();
     setTimeout(() => {
       poemBox.hidden = false;
+      scheduleOverlapCheck(200);
       typewriter(poemTextEl, poemLines, 38, () => {
+        scheduleOverlapCheck(150);
         setTimeout(() => goToScene('level6'), 1400);
       });
     }, 700);
@@ -614,11 +708,13 @@
     if (sharePanelShown) {
       // still refresh in case they changed their answer
       renderReport();
+      scheduleOverlapCheck(150);
       return;
     }
     sharePanelShown = true;
     renderReport();
     sharePanel.hidden = false;
+    scheduleOverlapCheck(200);
   }
 
   function renderReport() {
@@ -749,6 +845,9 @@
      10. RESTART
   --------------------------------------------------------------------- */
   function restartAdventure() {
+    wandering = false;
+    clearTimeout(wanderTimer);
+    clearTimeout(overlapCheckTimer);
     resetFetchGame();
     resetTreatGame();
     journey.treatAttempts = 0;
