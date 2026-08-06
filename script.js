@@ -1,192 +1,1031 @@
-const scenes=[...document.querySelectorAll('.scene')];
-const show=id=>scenes.forEach(s=>s.classList.toggle('active',s.id===id));
-const petals=document.getElementById('petals');
-const sparkles=document.getElementById('sparkles');
-const transition=document.getElementById('transition');
+/* ==========================================================================
+   Fur Baby's Adventure — script.js
+   Vanilla JS only. No frameworks.
+   ========================================================================== */
+(() => {
+  'use strict';
 
-const poemText=`there is a quiet peace your presence leaves behind
-somehow, my eyes always find you before my thoughts do
-perhaps the silence between us has been speaking all along
-and your eyes.....they hold a depth that makes me forget where I end and where you belong`;
+  /* ---------------------------------------------------------------------
+     0. UTILITIES
+  --------------------------------------------------------------------- */
+  const $ = (sel, ctx = document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+  const rand = (min, max) => Math.random() * (max - min) + min;
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-const replies={
-  yes:'That makes Boogie very happy 🥹✨ Coffee date approved.',
-  maybe:'Aww, Boogie will wait patiently and keep smiling 🤍',
-  think:'No rush at all. Boogie believes in gentle timelines 🌷'
-};
+  const body = document.body;
+  const dogStage = $('#dog-stage');
+  const buddySvg = $('#buddy');
+  const speechBubble = $('#speech-bubble');
+  const speechText = $('#speech-text');
+  const heartsLayer = $('#hearts');
+  const pawTrailLayer = $('#paw-trail');
+  const fxLayer = $('#fx-layer');
+  const cursorTrailLayer = $('#cursor-trail');
 
-for(let i=0;i<28;i++){
-  const p=document.createElement('i');
-  p.className='petal';
-  p.style.left=Math.random()*100+'vw';
-  p.style.animationDelay=Math.random()*12+'s';
-  p.style.animationDuration=8+Math.random()*10+'s';
-  p.style.opacity=.35+Math.random()*.55;
-  petals.appendChild(p);
-}
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-for(let i=0;i<40;i++){
-  const s=document.createElement('i');
-  s.className='spark';
-  s.style.left=Math.random()*100+'vw';
-  s.style.top=Math.random()*100+'vh';
-  s.style.animationDelay=Math.random()*6+'s';
-  sparkles.appendChild(s);
-}
+  /* ---------------------------------------------------------------------
+     1. SCENE MANAGER
+  --------------------------------------------------------------------- */
+  const sceneOrder = ['intro', 'level1', 'level2', 'level3', 'level4', 'level5', 'level6'];
+  let currentScene = 'intro';
 
-const flash=(x,y,txt='💖')=>{
-  const e=document.createElement('div');
-  e.textContent=txt;
-  e.style.position='fixed';
-  e.style.left=x+'px';
-  e.style.top=y+'px';
-  e.style.fontSize='1.2rem';
-  e.style.transition='transform 1s ease,opacity 1s ease';
-  e.style.pointerEvents='none';
-  e.style.zIndex='20';
-  document.body.appendChild(e);
-  requestAnimationFrame(()=>{
-    e.style.transform='translateY(-80px) scale(1.8)';
-    e.style.opacity='0';
+  // Tracks choices for the optional, user-initiated shareable report at the end.
+  // Nothing here is ever sent anywhere automatically — she chooses if/when to
+  // save or copy it herself.
+  const journey = {
+    treatAttempts: 0,
+    relationshipChoice: null,
+    finalChoice: null,
+  };
+
+  function goToScene(name) {
+    const current = $('.scene.active');
+    const next = document.getElementById(`scene-${name}`);
+    if (!next || next === current) return;
+
+    if (current) {
+      current.classList.remove('active');
+    }
+    // small delay so CSS transition can be appreciated
+    requestAnimationFrame(() => {
+      next.classList.add('active');
+    });
+
+    if (!prefersReducedMotion) {
+      sparkleBurst(window.innerWidth / 2, window.innerHeight / 2, 10);
+    }
+
+    currentScene = name;
+    body.className = `scene-${name}`;
+    updateProgress(name);
+    onEnterScene(name);
+  }
+
+  function updateProgress(name) {
+    $$('.dot').forEach((d) => {
+      d.classList.toggle('active', d.dataset.scene === name);
+    });
+  }
+
+  function onEnterScene(name) {
+    switch (name) {
+      case 'intro':
+        setDogState('idle');
+        say("Hi 😊\nMy human asked me to show you something.\nWould you come with me?", 999999);
+        break;
+      case 'level1':
+        setDogState('sit');
+        centerDogFor('level1');
+        say("Throw the ball for me!", 3200);
+        resetFetchGame();
+        break;
+      case 'level2':
+        setDogState('sit');
+        centerDogFor('level2');
+        say("Ooh, is one of those for me?", 3000);
+        resetTreatGame();
+        break;
+      case 'level3':
+        setDogState('idle');
+        centerDogFor('level3');
+        say("Before I continue...\nMy human wanted me to ask...", 3600);
+        break;
+      case 'committed':
+        setDogState('sit');
+        centerDogFor('committed');
+        say("I hope this made you smile 😊", 999999);
+        break;
+      case 'level4':
+        setDogState('sit');
+        centerDogFor('level4');
+        say("Watch closely, then copy the pattern!", 3200);
+        startMemoryGame();
+        break;
+      case 'level5':
+        setDogState('sit');
+        centerDogFor('level5');
+        say("I brought you something 💌", 3000);
+        resetPoemScene();
+        break;
+      case 'level6':
+        setDogState('sit');
+        centerDogFor('level6');
+        say("This is the important part...", 3200);
+        break;
+    }
+  }
+
+  // Positions Fur Baby per-scene (via inline style, since #dog-stage default is centered/bottom)
+  function centerDogFor(scene) {
+    dogStage.style.left = '50%';
+    dogStage.style.bottom = '';
+    dogStage.style.transform = 'translateX(-50%)';
+    if (scene === 'level1') {
+      dogStage.style.bottom = '8vh';
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     2. BUDDY: STATES, SPEECH, HEARTS, PAW PRINTS, IDLE BEHAVIOUR
+  --------------------------------------------------------------------- */
+  const STATES = ['idle', 'happy', 'jump', 'run', 'sit', 'sleep'];
+
+  function setDogState(state) {
+    STATES.forEach((s) => dogStage.classList.remove(`state-${s}`));
+    if (state !== 'idle') dogStage.classList.add(`state-${state}`);
+    if (state !== 'run') buddySvg.style.transform = '';
+    resetIdleTimer();
+  }
+
+  let speechTimer = null;
+  function say(text, duration = 2600) {
+    speechText.textContent = text;
+    speechBubble.classList.add('show');
+    clearTimeout(speechTimer);
+    if (duration < 999999) {
+      speechTimer = setTimeout(() => speechBubble.classList.remove('show'), duration);
+    }
+  }
+  function hideSpeech() {
+    speechBubble.classList.remove('show');
+  }
+
+  function popHearts(count = 6) {
+    for (let i = 0; i < count; i++) {
+      const h = document.createElement('span');
+      h.className = 'heart-pop';
+      h.textContent = pick(['💗', '💕', '💖', '✨']);
+      h.style.setProperty('--dx', `${rand(-70, 70)}px`);
+      h.style.left = `${50 + rand(-10, 10)}%`;
+      h.style.animationDelay = `${i * 0.06}s`;
+      heartsLayer.appendChild(h);
+      setTimeout(() => h.remove(), 1600 + i * 60);
+    }
+  }
+
+  function dropPawPrint(x, y, flip) {
+    const p = document.createElement('span');
+    p.className = 'paw-print';
+    p.textContent = '🐾';
+    p.style.left = `${x}px`;
+    p.style.top = `${y}px`;
+    p.style.transform = `scale(${flip ? -1 : 1},1)`;
+    pawTrailLayer.appendChild(p);
+    setTimeout(() => p.remove(), 1200);
+  }
+
+  // Idle -> sleep after inactivity
+  let idleTimer = null;
+  function resetIdleTimer() {
+    clearTimeout(idleTimer);
+    if (dogStage.classList.contains('state-sleep')) {
+      dogStage.classList.remove('state-sleep');
+    }
+    idleTimer = setTimeout(() => {
+      // only nap during calm scenes
+      if (['intro', 'level3'].includes(currentScene)) {
+        dogStage.classList.add('state-sleep');
+      }
+    }, 14000);
+  }
+  resetIdleTimer();
+  ['pointerdown', 'pointermove', 'keydown'].forEach((evt) =>
+    document.addEventListener(evt, () => {
+      if (dogStage.classList.contains('state-sleep')) resetIdleTimer();
+    }, { passive: true })
+  );
+
+  // Subtle "follow cursor" head tilt during idle
+  document.addEventListener('pointermove', (e) => {
+    if (currentScene !== 'intro') return;
+    const cx = window.innerWidth / 2;
+    const tilt = Math.max(-10, Math.min(10, (e.clientX - cx) / cx * 10));
+    dogStage.style.setProperty('--cursor-tilt', `${tilt}deg`);
   });
-  setTimeout(()=>e.remove(),1100);
-};
 
-function cinematic(next){
-  transition.className='transition on';
-  transition.innerHTML='<div class="transition-ring"></div><div class="transition-title">Boogie’s little movie moment ✨</div><div class="transition-dog"><div class="dog dog-run"><div class="shadow"></div><div class="tail"></div><div class="body"></div><div class="leg leg-fl"></div><div class="leg leg-fr"></div><div class="leg leg-bl"></div><div class="leg leg-br"></div><div class="head"><div class="ear ear-l"></div><div class="ear ear-r"></div><div class="eye eye-l"></div><div class="eye eye-r"></div><div class="blush blush-l"></div><div class="blush blush-r"></div><div class="muzzle"></div><div class="nose"></div><div class="mouth"></div></div></div><div class="transition-vignette"></div>';
-  setTimeout(()=>show(next),600);
-  setTimeout(()=>{
-    transition.className='transition out';
-    transition.innerHTML='<div class="transition-ring"></div><div class="transition-title">Boogie’s little movie moment ✨</div><div class="transition-dog"><div class="dog dog-run"><div class="shadow"></div><div class="tail"></div><div class="body"></div><div class="leg leg-fl"></div><div class="leg leg-fr"></div><div class="leg leg-bl"></div><div class="leg leg-br"></div><div class="head"><div class="ear ear-l"></div><div class="ear ear-r"></div><div class="eye eye-l"></div><div class="eye eye-r"></div><div class="blush blush-l"></div><div class="blush blush-r"></div><div class="muzzle"></div><div class="nose"></div><div class="mouth"></div></div></div><div class="transition-vignette"></div>';
-    setTimeout(()=>{
-      transition.className='transition';
-      transition.innerHTML='';
-    },620);
-  },980);
-}
+  /* ---------------------------------------------------------------------
+     3. INTRO: PET ME BUTTON
+  --------------------------------------------------------------------- */
+  $('#btn-pet-me').addEventListener('click', () => {
+    ensureAudio();
+    setDogState('jump');
+    popHearts(8);
+    say("Yippee! Let's go 🐾", 1800);
+    setTimeout(() => {
+      goToScene('level1');
+    }, 1000);
+  });
 
-document.getElementById('petBtn').addEventListener('click',()=>{
-  for(let i=0;i<18;i++)flash(window.innerWidth/2+(Math.random()*160-80),window.innerHeight*0.6);
-  cinematic('level1');
-});
+  /* ---------------------------------------------------------------------
+     4. LEVEL 1 — FETCH GAME
+  --------------------------------------------------------------------- */
+  const fetchArea = $('#fetch-area');
+  const ball = $('#tennis-ball');
+  const throwCountEl = $('#throw-count');
+  let throws = 0;
+  let fetching = false;
+  let dragging = false;
+  let dragOffset = { x: 0, y: 0 };
 
-const ball=document.getElementById('ball');
-const runner=document.getElementById('runnerWrap');
-const meter=document.getElementById('meterFill');
-const trail=document.getElementById('pawsTrail');
-let throws=0,drag=false,poemStarted=false;
-const field=()=>document.querySelector('.field').getBoundingClientRect();
-
-ball.addEventListener('pointerdown',e=>{drag=true;ball.setPointerCapture(e.pointerId);ball.style.cursor='grabbing'});
-ball.addEventListener('pointermove',e=>{
-  if(!drag)return;
-  const r=field();
-  ball.style.left=Math.min(88,Math.max(4,((e.clientX-r.left)/r.width)*100))+'%';
-  ball.style.top=Math.min(74,Math.max(12,((e.clientY-r.top)/r.height)*100))+'%';
-});
-ball.addEventListener('pointerup',()=>{if(!drag)return;drag=false;ball.style.cursor='grab';fetchBall()});
-ball.addEventListener('click',()=>fetchBall());
-
-function pawBurst(){
-  const r=ball.getBoundingClientRect();
-  for(let i=0;i<4;i++){
-    const p=document.createElement('div');
-    p.className='paw';
-    p.textContent='🐾';
-    p.style.left=(r.left+Math.random()*20)+'px';
-    p.style.top=(r.top+Math.random()*20)+'px';
-    trail.appendChild(p);
-    setTimeout(()=>p.remove(),850);
+  function resetFetchGame() {
+    throws = 0;
+    throwCountEl.textContent = '0';
+    fetching = false;
+    ball.style.left = '50%';
+    ball.style.top = '50%';
+    ball.classList.remove('dragging');
   }
-}
 
-function fetchBall(){
-  ball.classList.remove('fly');
-  void ball.offsetWidth;
-  ball.classList.add('fly');
-  runner.classList.add('running');
-  pawBurst();
-  setTimeout(()=>pawBurst(),160);
-  setTimeout(()=>runner.classList.remove('running'),900);
-  setTimeout(()=>{
-    ball.style.left='14%';
-    ball.style.top='62%';
-    ball.classList.remove('fly');
-    throws++;
-    meter.style.width=Math.min(100,throws/3*100)+'%';
-    document.getElementById('m1').textContent=throws<3?`Nice throw ${throws}/3!`:'Boogie got the ball three times!';
-    if(throws>=3)setTimeout(()=>cinematic('level2'),1000);
-  },980);
-}
-
-document.querySelectorAll('.treat').forEach(btn=>btn.addEventListener('click',()=>{
-  const ok=btn.dataset.correct==='1';
-  document.getElementById('m2').textContent=ok?'Boogie does a tiny happy spin! 🎉':'Boogie politely disagrees 😅';
-  if(ok)setTimeout(()=>cinematic('level3'),900);
-}));
-
-document.querySelectorAll('.option').forEach(btn=>btn.addEventListener('click',()=>{
-  const next=btn.dataset.next;
-  const msg=document.getElementById('m3');
-  if(next==='6'){
-    msg.textContent='I hope this little adventure still made you smile 😊';
-    setTimeout(()=>cinematic('level6'),1100);
-  }else{
-    msg.textContent='Thanks for answering gently. Boogie keeps going with a wag!';
-    setTimeout(()=>cinematic('level4'),1000);
+  function ballPointerDown(e) {
+    if (fetching) return;
+    dragging = true;
+    ball.classList.add('dragging');
+    ball.setPointerCapture(e.pointerId);
+    const rect = ball.getBoundingClientRect();
+    dragOffset.x = e.clientX - rect.left - rect.width / 2;
+    dragOffset.y = e.clientY - rect.top - rect.height / 2;
   }
-}));
 
-const puzzle=document.getElementById('puzzle');
-let tiles=[1,2,3,4,5,6,7,8,0],sel=null;
+  function ballPointerMove(e) {
+    if (!dragging) return;
+    const areaRect = fetchArea.getBoundingClientRect();
+    let x = e.clientX - areaRect.left - dragOffset.x;
+    let y = e.clientY - areaRect.top - dragOffset.y;
+    x = Math.max(20, Math.min(areaRect.width - 20, x));
+    y = Math.max(20, Math.min(areaRect.height - 20, y));
+    ball.style.left = `${x}px`;
+    ball.style.top = `${y}px`;
+  }
 
-function drawPuzzle(){
-  puzzle.innerHTML='';
-  tiles.forEach((n,i)=>{
-    const b=document.createElement('button');
-    b.className='tile';
-    b.textContent=n||'🐶';
-    if(sel===i)b.style.outline='3px solid #ff9fc6';
-    b.onclick=()=>{
-      if(sel===null){
-        sel=i;
-        drawPuzzle();
+  function ballPointerUp(e) {
+    if (!dragging) return;
+    dragging = false;
+    ball.classList.remove('dragging');
+    throwFetch();
+  }
+
+  ball.addEventListener('pointerdown', ballPointerDown);
+  window.addEventListener('pointermove', ballPointerMove);
+  window.addEventListener('pointerup', ballPointerUp);
+
+  function throwFetch() {
+    fetching = true;
+    setDogState('run');
+    say(pick(["I'll get it!", "Fetching!", "On my way!"]), 1400);
+
+    const areaRect = fetchArea.getBoundingClientRect();
+    const ballRect = ball.getBoundingClientRect();
+    const ballX = ballRect.left + ballRect.width / 2;
+    const ballY = ballRect.top + ballRect.height / 2;
+    const startLeft = window.innerWidth / 2;
+
+    animateDogRunTo(ballX, () => {
+      // "grab" the ball
+      setDogState('happy');
+      popHearts(2);
+      spawnPaws(ballX, ballY);
+      setTimeout(() => {
+        setDogState('run');
+        animateDogRunTo(startLeft, () => {
+          setDogState('sit');
+          fetching = false;
+          ball.style.left = '50%';
+          ball.style.top = '50%';
+          throws++;
+          throwCountEl.textContent = String(throws);
+          if (throws >= 3) {
+            say("Yay, three catches! You're a great thrower 🎾", 2600);
+            popHearts(6);
+            setTimeout(() => goToScene('level2'), 1800);
+          } else {
+            say('Throw it again!', 1600);
+          }
+        });
+      }, 500);
+    });
+  }
+
+  // Animate #dog-stage horizontally toward a target viewport X using transform, with paw prints.
+  // Note: only the visual #buddy SVG is mirrored when changing direction — never #dog-stage
+  // itself, since that element also holds the speech bubble/hearts/paw-trail, and flipping it
+  // used to mirror the text Fur Baby was "saying".
+  function animateDogRunTo(targetX, onDone) {
+    const stageRectStart = dogStage.getBoundingClientRect();
+    const startX = stageRectStart.left + stageRectStart.width / 2;
+    const distance = targetX - startX;
+    const duration = Math.min(1200, Math.max(500, Math.abs(distance) * 2.2));
+    const startTime = performance.now();
+
+    // Disable the CSS transition while we drive position manually frame-by-frame —
+    // otherwise every tiny per-frame change gets re-eased over ~1s and motion turns to mush.
+    const prevTransition = dogStage.style.transition;
+    dogStage.style.transition = 'none';
+    buddySvg.style.transform = `scaleX(${distance < 0 ? -1 : 1})`;
+
+    function frame(now) {
+      const t = Math.min(1, (now - startTime) / duration);
+      const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; // easeInOutQuad
+      const currentOffset = distance * eased;
+      dogStage.style.transform = `translateX(calc(-50% + ${currentOffset}px))`;
+
+      if (Math.random() < 0.35) {
+        const r = dogStage.getBoundingClientRect();
+        dropPawPrint(r.left + r.width / 2 + rand(-10, 10), r.bottom - 10, distance < 0);
+      }
+
+      if (t < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        dogStage.style.transition = prevTransition;
+        onDone && onDone();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function spawnPaws(x, y) {
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => dropPawPrint(x + rand(-14, 14), y + rand(-8, 8), false), i * 80);
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     5. LEVEL 2 — TREAT GAME
+  --------------------------------------------------------------------- */
+  const treatCards = $$('.treat-card');
+  const treatReaction = $('#treat-reaction');
+  const correctTreatIndex = 1; // Peanut Butter Biscuit
+  let treatSolved = false;
+
+  const wrongReactions = [
+    "Fur Baby sniffs it... and walks away. Not this one!",
+    "Fur Baby gives you a polite 'no thank you' look.",
+    "Fur Baby nudges it aside gently. Try again!",
+  ];
+
+  function resetTreatGame() {
+    treatSolved = false;
+    treatReaction.textContent = '';
+    treatCards.forEach((c) => c.classList.remove('correct', 'wrong'));
+  }
+
+  treatCards.forEach((card) => {
+    card.addEventListener('click', () => {
+      if (treatSolved) return;
+      const idx = Number(card.dataset.treat);
+      if (idx === correctTreatIndex) {
+        treatSolved = true;
+        card.classList.add('correct');
+        setDogState('happy');
+        popHearts(6);
+        treatReaction.textContent = "That's exactly it! Fur Baby's tail is a blur! 🥜✨";
+        say('My favorite! You know me so well!', 2600);
+        setTimeout(() => goToScene('level3'), 2000);
+      } else {
+        journey.treatAttempts++;
+        card.classList.add('wrong');
+        setDogState('idle');
+        treatReaction.textContent = pick(wrongReactions);
+        say(pick(["Hehe, nope!", "Not quite!", "Try another one!"]), 1400);
+        setTimeout(() => card.classList.remove('wrong'), 500);
+      }
+    });
+  });
+
+  /* ---------------------------------------------------------------------
+     6. LEVEL 3 — RELATIONSHIP QUESTION
+  --------------------------------------------------------------------- */
+  $$('#scene-level3 .choice-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const choice = btn.dataset.choice;
+      journey.relationshipChoice = choice;
+      if (choice === 'committed') {
+        setDogState('sit');
+        say("That's okay 💛", 1800);
+        setTimeout(() => goToScene('committed'), 900);
+      } else if (choice === 'single') {
+        setDogState('happy');
+        popHearts(4);
+        say('Yay! Let\'s keep going then!', 1800);
+        setTimeout(() => goToScene('level4'), 1000);
+      } else {
+        setDogState('idle');
+        say("That's okay! Let's just keep having fun 🐾", 2000);
+        setTimeout(() => goToScene('level4'), 1200);
+      }
+    });
+  });
+
+  $('#btn-restart-1').addEventListener('click', restartAdventure);
+
+  /* ---------------------------------------------------------------------
+     7. LEVEL 4 — MEMORY PUZZLE (Simon-style paw sequence)
+  --------------------------------------------------------------------- */
+  const memoryGrid = $('#memory-grid');
+  const memoryHint = $('#memory-hint');
+  let sequence = [];
+  let playerStep = 0;
+  let showingSequence = false;
+  let sequenceLength = 4;
+
+  function buildMemoryGrid() {
+    memoryGrid.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+      const tile = document.createElement('button');
+      tile.className = 'paw-tile';
+      tile.textContent = '🐾';
+      tile.dataset.index = String(i);
+      tile.addEventListener('click', () => onTileClick(i, tile));
+      memoryGrid.appendChild(tile);
+    }
+  }
+
+  function startMemoryGame() {
+    buildMemoryGrid();
+    sequence = Array.from({ length: sequenceLength }, () => Math.floor(Math.random() * 9));
+    playerStep = 0;
+    showingSequence = true;
+    memoryHint.textContent = 'Watch closely...';
+    setTimeout(() => playSequence(), 700);
+  }
+
+  function playSequence() {
+    const tiles = $$('.paw-tile', memoryGrid);
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i > 0) tiles[sequence[i - 1]].classList.remove('lit');
+      if (i >= sequence.length) {
+        clearInterval(interval);
+        showingSequence = false;
+        memoryHint.textContent = 'Now repeat the pattern!';
         return;
       }
-      [tiles[sel],tiles[i]]=[tiles[i],tiles[sel]];
-      sel=null;
-      drawPuzzle();
-      if(tiles.join('')==='123456780'){
-        document.getElementById('m4').textContent='Perfect! The envelope appears.';
-        setTimeout(()=>cinematic('level5'),800);
-        startPoem();
+      tiles[sequence[i]].classList.add('lit');
+      i++;
+    }, 650);
+  }
+
+  function onTileClick(index, tileEl) {
+    if (showingSequence) return;
+    if (index === sequence[playerStep]) {
+      tileEl.classList.add('correct-flash');
+      setTimeout(() => tileEl.classList.remove('correct-flash'), 300);
+      playerStep++;
+      if (playerStep === sequence.length) {
+        memoryHint.textContent = 'Perfect memory! 🎉';
+        setDogState('happy');
+        popHearts(6);
+        say('Wow, great memory!', 2000);
+        setTimeout(() => goToScene('level5'), 1600);
       }
-    };
-    puzzle.appendChild(b);
-  });
-}
-drawPuzzle();
-
-function startPoem(){
-  if(poemStarted)return;
-  poemStarted=true;
-  const el=document.getElementById('poem');
-  const env=document.getElementById('envelope');
-  env.animate([{transform:'scale(1)'},{transform:'scale(1.14)'},{transform:'scale(1)'}],{duration:700,iterations:2});
-  let i=0;
-  const t=setInterval(()=>{
-    el.textContent=poemText.slice(0,++i);
-    if(i>=poemText.length){
-      clearInterval(t);
-      setTimeout(()=>cinematic('level6'),1800);
+    } else {
+      tileEl.classList.add('wrong-flash');
+      setTimeout(() => tileEl.classList.remove('wrong-flash'), 300);
+      memoryHint.textContent = "Oops, that's not it — watch again!";
+      say('Almost! Watch again.', 1600);
+      playerStep = 0;
+      showingSequence = true;
+      setTimeout(() => playSequence(), 900);
     }
-  },26);
-}
-document.getElementById('envelope').addEventListener('click',startPoem);
+  }
 
-document.querySelectorAll('.response').forEach(btn=>btn.addEventListener('click',()=>{
-  document.getElementById('m6').textContent=replies[btn.dataset.reply];
-}));
+  /* ---------------------------------------------------------------------
+     8. LEVEL 5 — POEM REVEAL
+  --------------------------------------------------------------------- */
+  const envelope = $('#envelope');
+  const envelopeHint = $('#envelope-hint');
+  const poemBox = $('#poem-box');
+  const poemTextEl = $('#poem-text');
 
-setInterval(()=>flash(Math.random()*window.innerWidth,window.innerHeight+20,'✨'),2400);
+  const poemLines = [
+    "there is a quiet peace your presence leaves behind,",
+    "somehow, my eyes always find you before my thoughts do.",
+    "perhaps the silence between us has been speaking all along,",
+    "and your eyes.....they hold a depth that makes me forget",
+    "where I end and where you belong.",
+  ].join('\n');
+
+  function resetPoemScene() {
+    envelope.classList.remove('open');
+    poemBox.hidden = true;
+    poemTextEl.textContent = '';
+    envelopeHint.textContent = 'Tap the envelope to open it';
+    envelope.onclick = openEnvelope;
+  }
+
+  function openEnvelope() {
+    envelope.onclick = null;
+    envelope.classList.add('open');
+    envelopeHint.textContent = '';
+    setDogState('happy');
+    popHearts(4);
+    ensureAudio();
+    playAmbientPiano();
+    setTimeout(() => {
+      poemBox.hidden = false;
+      typewriter(poemTextEl, poemLines, 38, () => {
+        setTimeout(() => goToScene('level6'), 1400);
+      });
+    }, 700);
+  }
+
+  function typewriter(el, text, speed, onDone) {
+    let i = 0;
+    el.textContent = '';
+    const timer = setInterval(() => {
+      el.textContent += text[i];
+      i++;
+      if (i >= text.length) {
+        clearInterval(timer);
+        onDone && onDone();
+      }
+    }, speed);
+  }
+
+  /* ---------------------------------------------------------------------
+     9. LEVEL 6 — FINAL SCREEN
+  --------------------------------------------------------------------- */
+  const finalReaction = $('#final-reaction');
+  const finalResponses = {
+    yes: "Yay! 😊 Fur Baby is doing zoomies of joy right now. Coffee it is!",
+    maybe: "That's okay 🤍 No pressure at all — Fur Baby will just be happy to know you.",
+    think: "Take all the time you need 🌸 Fur Baby will be here, tail wagging, whenever you're ready.",
+  };
+
+  $$('#scene-level6 .choice-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.final;
+      journey.finalChoice = key;
+      finalReaction.textContent = finalResponses[key] || '';
+      if (key === 'yes') {
+        setDogState('happy');
+        popHearts(10);
+        say('Best. Day. Ever!! 🐾💛', 3000);
+      } else if (key === 'maybe') {
+        setDogState('sit');
+        say('Okay! I\'ll be right here 🤍', 2600);
+      } else {
+        setDogState('idle');
+        say('Take your time 🌸', 2600);
+      }
+      revealSharePanel();
+    });
+  });
+
+  /* ---------------------------------------------------------------------
+     9b. OPTIONAL SHAREABLE REPORT — built and sent only if SHE chooses to
+  --------------------------------------------------------------------- */
+  const sharePanel = $('#share-panel');
+  const reportList = $('#report-list');
+  const shareStatus = $('#share-status');
+  let sharePanelShown = false;
+
+  const relationshipLabels = {
+    single: "❤️ I'm single",
+    committed: '💛 I\'m committed',
+    pass: "🌼 I'd rather not answer",
+  };
+  const finalLabels = {
+    yes: '😊 Yes, let\'s get coffee',
+    maybe: '🤍 Maybe',
+    think: '🌸 Let me think about it',
+  };
+
+  function buildReportLines() {
+    const lines = [];
+    if (journey.relationshipChoice) {
+      lines.push(`Relationship status: ${relationshipLabels[journey.relationshipChoice]}`);
+    }
+    lines.push(
+      journey.treatAttempts === 0
+        ? 'Guessed Fur Baby\'s favorite treat on the first try 🥜'
+        : `Guessed Fur Baby's favorite treat after ${journey.treatAttempts} tr${journey.treatAttempts === 1 ? 'y' : 'ies'} 🥜`
+    );
+    if (journey.finalChoice) {
+      lines.push(`Coffee invite: ${finalLabels[journey.finalChoice]}`);
+    }
+    return lines;
+  }
+
+  function revealSharePanel() {
+    if (sharePanelShown) {
+      // still refresh in case they changed their answer
+      renderReport();
+      return;
+    }
+    sharePanelShown = true;
+    renderReport();
+    sharePanel.hidden = false;
+  }
+
+  function renderReport() {
+    reportList.innerHTML = '';
+    buildReportLines().forEach((line) => {
+      const li = document.createElement('li');
+      li.textContent = line;
+      reportList.appendChild(li);
+    });
+  }
+
+  function buildReportText() {
+    const lines = buildReportLines();
+    return `🐾 Fur Baby's Adventure Report\n${lines.join('\n')}`;
+  }
+
+  $('#btn-copy-text').addEventListener('click', async () => {
+    const text = buildReportText();
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+      shareStatus.textContent = 'Copied! Paste it wherever you\'d like to send it 💌';
+    } catch (err) {
+      shareStatus.textContent = 'Could not copy automatically — you can select the text above manually.';
+    }
+  });
+
+  $('#btn-save-image').addEventListener('click', () => {
+    const dataUrl = drawReportImage(buildReportLines());
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = 'buddys-adventure-report.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    shareStatus.textContent = 'Saved! You can share the image however you\'d like 🖼️';
+  });
+
+  function drawReportImage(lines) {
+    const canvas = document.createElement('canvas');
+    const W = 640, H = 460 + lines.length * 46;
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // background gradient
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#fff0f6');
+    bg.addColorStop(0.6, '#f3e9ff');
+    bg.addColorStop(1, '#eaf7f1');
+    ctx.fillStyle = bg;
+    roundRect(ctx, 0, 0, W, H, 0);
+    ctx.fill();
+
+    // card
+    const pad = 28;
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    roundRect(ctx, pad, pad, W - pad * 2, H - pad * 2, 28);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // decorative paws
+    ctx.font = '30px sans-serif';
+    ctx.fillText('🐾', pad + 20, pad + 50);
+    ctx.fillText('🐾', W - pad - 60, H - pad - 30);
+
+    // title
+    ctx.fillStyle = '#7a5aa8';
+    ctx.font = '700 40px "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText("Fur Baby's Adventure Report", W / 2, pad + 90);
+
+    ctx.font = '24px "Segoe UI", sans-serif';
+    ctx.fillStyle = '#5a4a5e';
+    let y = pad + 150;
+    lines.forEach((line) => {
+      wrapText(ctx, line, W / 2, y, W - pad * 2 - 60, 32);
+      y += 60;
+    });
+
+    ctx.font = 'italic 22px Georgia, serif';
+    ctx.fillStyle = '#8a768f';
+    ctx.fillText('delivered with a wagging tail', W / 2, H - pad - 20);
+
+    return canvas.toDataURL('image/png');
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function wrapText(ctx, text, cx, y, maxWidth, lineHeight) {
+    const words = text.split(' ');
+    let line = '';
+    const lines = [];
+    words.forEach((word) => {
+      const test = line ? `${line} ${word}` : word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    });
+    if (line) lines.push(line);
+    lines.forEach((l, i) => ctx.fillText(l, cx, y + i * lineHeight));
+  }
+
+  /* ---------------------------------------------------------------------
+     10. RESTART
+  --------------------------------------------------------------------- */
+  function restartAdventure() {
+    resetFetchGame();
+    resetTreatGame();
+    journey.treatAttempts = 0;
+    journey.relationshipChoice = null;
+    journey.finalChoice = null;
+    sharePanelShown = false;
+    sharePanel.hidden = true;
+    shareStatus.textContent = '';
+    goToScene('intro');
+  }
+
+  /* ---------------------------------------------------------------------
+     11. AMBIENT BACKGROUND: CLOUDS, PETALS, SPARKLES
+  --------------------------------------------------------------------- */
+  function buildClouds() {
+    const layer = $('#clouds');
+    const count = window.innerWidth < 640 ? 3 : 5;
+    for (let i = 0; i < count; i++) {
+      const c = document.createElement('div');
+      c.className = 'cloud';
+      const w = rand(90, 200);
+      const h = w * 0.4;
+      c.style.width = `${w}px`;
+      c.style.height = `${h}px`;
+      c.style.top = `${rand(4, 45)}%`;
+      c.style.setProperty('--w', w);
+      c.style.animationDuration = `${rand(40, 80)}s`;
+      c.style.animationDelay = `-${rand(0, 60)}s`;
+      // pseudo bumps via inline style vars read by ::before/::after is tricky; use box-shadow instead
+      c.style.boxShadow = `
+        ${w * 0.25}px ${-h * 0.35}px 0 ${-h * 0.1}px #fff,
+        ${w * 0.55}px ${-h * 0.15}px 0 ${-h * 0.2}px #fff,
+        ${w * 0.15}px ${h * 0.1}px 0 ${-h * 0.15}px #fff
+      `;
+      layer.appendChild(c);
+    }
+  }
+
+  function buildPetals() {
+    const layer = $('#petals');
+    const count = window.innerWidth < 640 ? 14 : 26;
+    for (let i = 0; i < count; i++) {
+      spawnPetal(layer, true);
+    }
+  }
+  function spawnPetal(layer, randomDelay) {
+    const p = document.createElement('span');
+    p.className = 'petal';
+    p.textContent = pick(['🌸', '🌸', '🌸', '💮']);
+    p.style.left = `${rand(0, 100)}%`;
+    p.style.fontSize = `${rand(0.9, 1.7)}rem`;
+    const fallDur = rand(9, 18);
+    const swayDur = rand(3, 6);
+    p.style.animationDuration = `${fallDur}s, ${swayDur}s`;
+    p.style.animationDelay = randomDelay ? `-${rand(0, fallDur)}s, -${rand(0, swayDur)}s` : `0s, 0s`;
+    layer.appendChild(p);
+  }
+
+  function buildSparkles() {
+    const layer = $('#sparkles');
+    const count = window.innerWidth < 640 ? 12 : 22;
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement('span');
+      s.className = 'sparkle';
+      const size = rand(3, 8);
+      s.style.width = `${size}px`;
+      s.style.height = `${size}px`;
+      s.style.left = `${rand(0, 100)}%`;
+      s.style.top = `${rand(0, 100)}%`;
+      s.style.animationDuration = `${rand(2, 5)}s`;
+      s.style.animationDelay = `-${rand(0, 5)}s`;
+      layer.appendChild(s);
+    }
+  }
+
+  buildClouds();
+  buildPetals();
+  buildSparkles();
+
+  /* ---------------------------------------------------------------------
+     12. SOFT AMBIENT AUDIO (procedural, no external files)
+  --------------------------------------------------------------------- */
+  let audioCtx = null;
+  let soundOn = false;
+  let ambientTimer = null;
+  const soundToggleBtn = $('#sound-toggle');
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function playNote(freq, time, dur = 1.1, gainPeak = 0.05) {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, time);
+    gain.gain.linearRampToValueAtTime(gainPeak, time + 0.15);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(time);
+    osc.stop(time + dur + 0.1);
+  }
+
+  const scale = [523.25, 587.33, 659.25, 783.99, 880.0]; // C major pentatonic-ish, soft & piano-like
+
+  function playAmbientPiano() {
+    if (!soundOn || !audioCtx) return;
+    scheduleArpeggio();
+    clearInterval(ambientTimer);
+    ambientTimer = setInterval(scheduleArpeggio, 4200);
+  }
+
+  function scheduleArpeggio() {
+    if (!soundOn || !audioCtx) return;
+    const now = audioCtx.currentTime;
+    let t = now;
+    const notes = [pick(scale), pick(scale), pick(scale), pick(scale)];
+    notes.forEach((f, i) => {
+      playNote(f, t + i * 0.55, 1.3, 0.04);
+    });
+  }
+
+  soundToggleBtn.addEventListener('click', () => {
+    ensureAudio();
+    soundOn = !soundOn;
+    soundToggleBtn.textContent = soundOn ? '🔊' : '🔇';
+    if (soundOn) {
+      scheduleArpeggio();
+      clearInterval(ambientTimer);
+      ambientTimer = setInterval(scheduleArpeggio, 4200);
+    } else {
+      clearInterval(ambientTimer);
+    }
+  });
+
+  /* ---------------------------------------------------------------------
+     12b. POLISH: MAGIC PARTICLE BURSTS, CURSOR SPARKLES, CARD TILT, RIPPLES
+  --------------------------------------------------------------------- */
+  function sparkleBurst(x, y, count = 8) {
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement('span');
+      s.className = 'burst-sparkle';
+      const angle = (Math.PI * 2 * i) / count + rand(-0.3, 0.3);
+      const dist = rand(40, 120);
+      s.style.left = `${x}px`;
+      s.style.top = `${y}px`;
+      s.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+      s.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
+      s.style.animationDelay = `${i * 0.02}s`;
+      s.textContent = pick(['✨', '⋆', '·', '💫']);
+      fxLayer.appendChild(s);
+      setTimeout(() => s.remove(), 950);
+    }
+  }
+
+  // Gentle cursor sparkle trail (desktop only, respects reduced motion)
+  if (!prefersReducedMotion && hasFinePointer) {
+    let lastTrailTime = 0;
+    document.addEventListener('pointermove', (e) => {
+      const now = performance.now();
+      if (now - lastTrailTime < 70) return;
+      lastTrailTime = now;
+      const s = document.createElement('span');
+      s.className = 'trail-sparkle';
+      s.textContent = pick(['✨', '⋆', '·']);
+      s.style.left = `${e.clientX}px`;
+      s.style.top = `${e.clientY}px`;
+      cursorTrailLayer.appendChild(s);
+      setTimeout(() => s.remove(), 900);
+    }, { passive: true });
+  }
+
+  // Subtle 3D tilt on glass cards for a premium feel
+  if (!prefersReducedMotion && hasFinePointer) {
+    document.addEventListener('pointermove', (e) => {
+      const card = e.target.closest && e.target.closest('.glass-card');
+      $$('.glass-card.active-tilt').forEach((c) => {
+        if (c !== card) {
+          c.style.setProperty('--tiltX', '0deg');
+          c.style.setProperty('--tiltY', '0deg');
+          c.classList.remove('active-tilt');
+        }
+      });
+      if (!card) return;
+      const rect = card.getBoundingClientRect();
+      const px = (e.clientX - rect.left) / rect.width - 0.5;
+      const py = (e.clientY - rect.top) / rect.height - 0.5;
+      card.style.setProperty('--tiltX', `${(-py * 5).toFixed(2)}deg`);
+      card.style.setProperty('--tiltY', `${(px * 5).toFixed(2)}deg`);
+      card.classList.add('active-tilt');
+    }, { passive: true });
+  }
+
+  // Ripple feedback on interactive elements
+  document.addEventListener('pointerdown', (e) => {
+    const target = e.target.closest('.glow-btn, .choice-btn, .treat-card, .icon-btn, .paw-tile');
+    if (!target) return;
+    const rect = target.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    const size = Math.max(rect.width, rect.height) * 1.4;
+    ripple.style.width = `${size}px`;
+    ripple.style.height = `${size}px`;
+    ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+    ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+    const computedPosition = getComputedStyle(target).position;
+    if (computedPosition === 'static') target.style.position = 'relative';
+    target.style.overflow = target.style.overflow || 'hidden';
+    target.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 700);
+  }, { passive: true });
+
+  /* ---------------------------------------------------------------------
+     12c. PRELOADER + BUDDY'S ENTRANCE WALK-ON
+  --------------------------------------------------------------------- */
+  function hidePreloader() {
+    const pre = $('#preloader');
+    if (!pre) { runIntroEntrance(); return; }
+    pre.classList.add('hide');
+    setTimeout(() => {
+      pre.remove();
+      runIntroEntrance();
+    }, prefersReducedMotion ? 0 : 650);
+  }
+
+  function runIntroEntrance() {
+    if (prefersReducedMotion) {
+      dogStage.classList.remove('pre-entrance');
+      onEnterScene('intro');
+      return;
+    }
+    dogStage.classList.add('state-run');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => dogStage.classList.remove('pre-entrance'));
+    });
+    const settle = () => {
+      dogStage.removeEventListener('transitionend', settle);
+      setDogState('idle');
+      say("Hi 😊\nMy human asked me to show you something.\nWould you come with me?", 999999);
+      if (!prefersReducedMotion) sparkleBurst(window.innerWidth / 2, window.innerHeight * 0.55, 12);
+    };
+    dogStage.addEventListener('transitionend', settle);
+    // safety fallback in case transitionend doesn't fire on some browsers
+    setTimeout(() => {
+      if (dogStage.classList.contains('state-run')) settle();
+    }, 1400);
+  }
+
+  function startPreloaderSequence() {
+    const MIN_VISIBLE = prefersReducedMotion ? 0 : 900;
+    const started = performance.now();
+    const finish = () => {
+      const elapsed = performance.now() - started;
+      setTimeout(hidePreloader, Math.max(0, MIN_VISIBLE - elapsed));
+    };
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(finish).catch(finish);
+    } else {
+      finish();
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     13. INIT
+  --------------------------------------------------------------------- */
+  updateProgress('intro');
+  dogStage.classList.add('pre-entrance');
+  setDogState('idle');
+  if (document.readyState === 'complete') {
+    startPreloaderSequence();
+  } else {
+    window.addEventListener('load', startPreloaderSequence);
+  }
+})();
