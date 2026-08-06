@@ -2,7 +2,7 @@
    Fur Baby's Adventure — pastel Disney/Pixar-inspired glassmorphism
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Caveat:wght@600;700&family=Cormorant+Garamond:ital,wght@0,500;1,500;1,600&display=swap');
 
 :root{
   --sky-top:#fdeef3;
@@ -22,6 +22,7 @@
   --accent-2:#a98ee0;
   --radius:26px;
   --font-display:'Caveat', cursive;
+  --font-poem:'Cormorant Garamond', serif;
   --font-body:'Quicksand', sans-serif;
 }
 
@@ -506,9 +507,12 @@ h2{ font-size:clamp(1.5rem, 3.2vw + 0.9rem, 2.2rem); color:var(--accent-2); text
 }
 .poem-box{
   margin-top:20px;
-  font-family:var(--font-display);
-  font-size:1.5rem;
-  line-height:1.8;
+  font-family:var(--font-poem);
+  font-style:italic;
+  font-weight:500;
+  font-size:1.3rem;
+  letter-spacing:0.2px;
+  line-height:1.85;
   color:var(--ink);
   min-height:120px;
   white-space:pre-wrap;
